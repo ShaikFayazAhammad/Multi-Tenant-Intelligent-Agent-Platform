@@ -1,0 +1,476 @@
+[
+  {
+    "question": "How do I connect my  Apple  laptop to the TV screen?",
+    "answer": [
+      "1. There is a type -C connector for apple devices .",
+      "2. Plug the  HDMI cable to connect or for the TV ."
+    ],
+    "metadata": {
+      "category": "TV Questions",
+      "room": [
+        "Transformation",
+        "Innovation",
+        "Precision",
+        "Excellence",
+        "Passion",
+        "Integrity",
+        "Governance"
+      ]
+    }
+  },
+  {
+    "question": "How do I connect my  Windows  laptop to the TV screen?",
+    "answer": [
+      "1. Press  Win + K  on your Windows laptop.",
+      "2. Select the TV from the list of available devices.",
+      "3. On the TV, use the remote to approve the connection."
+    ],
+    "metadata": {
+      "category": "TV Questions",
+      "room": [
+        "Transformation",
+        "Innovation",
+        "Precision",
+        "Excellence",
+        "Passion",
+        "Integrity",
+        "Governance"
+      ]
+    }
+  },
+  {
+    "question": "How do I connect my  Apple  laptop to the Video Conferencing ?",
+    "answer": [
+      "1. There is a type -C connector for apple devices.",
+      "2. Plug the USB cable to connector for the  Video Conferencing ."
+    ],
+    "metadata": {
+      "category": "Video Conferencing Questions",
+      "room": [
+        "General"
+      ]
+    }
+  },
+  {
+    "question": "How do I connect my Windows laptop to the video conferencing device?",
+    "answer": [
+      "1. Connect the HDMI  cable from your laptop to the screen.",
+      "2. Connect the  USB cable to activate the camera.",
+      "3. Ensure the  Logi Meetup camera  is switched on."
+    ],
+    "metadata": {
+      "category": "Video Conferencing Questions",
+      "room": [
+        "General"
+      ]
+    }
+  },
+  {
+    "question": "Video conferencing device not working. I need tech support?",
+    "answer": [
+      "1. Contact the support team for troubleshooting."
+    ],
+    "metadata": {
+      "category": "Video Conferencing Questions",
+      "room": [
+        "General"
+      ]
+    }
+  },
+  {
+    "question": "Do we have an TV HDMI cable connection?",
+    "answer": [
+      "\uf0b7 Yes."
+    ],
+    "metadata": {
+      "category": "TV Questions",
+      "room": [
+        "Governance"
+      ]
+    }
+  },
+  {
+    "question": "How do I connect my  Apple  laptop to the Video Conferencing?",
+    "answer": [
+      "1. There is a type -C connector for apple devices.",
+      "2. Plug the HDMI ( Video Conferencing ) cab le to connector for the  Video Conferencing."
+    ],
+    "metadata": {
+      "category": "Video Conferencing Questions",
+      "room": [
+        "Governance"
+      ]
+    }
+  },
+  {
+    "question": "How do I connect my Windows laptop to the video conferencing device?",
+    "answer": [
+      "1. Connect the  HDMI  (Video Conferencing ) cable from your laptop to the screen.",
+      "2. Ensure the  Polly X30  camera  is switched on."
+    ],
+    "metadata": {
+      "category": "Video Conferencing Questions",
+      "room": [
+        "Governance"
+      ]
+    }
+  },
+  {
+    "question": "How do I connect my laptop to the Projector?",
+    "answer": [
+      "1. Use an HDMI cable to connect your laptop.",
+      "2. Select the projector input source using the remote."
+    ],
+    "metadata": {
+      "category": "Projector Questions",
+      "room": [
+        "General"
+      ]
+    }
+  },
+  {
+    "question": "The Projector is not turning on/connecting. I need tech support?",
+    "answer": [
+      "1. Stand in front  of the screen facing the projector and try first."
+    ],
+    "metadata": {
+      "category": "Projector Questions",
+      "room": [
+        "General"
+      ]
+    }
+  },
+  {
+    "question": "The AC in the meeting room isn't working how to switch it on?",
+    "answer": [
+      "1. Share the location of the meeting room  AC switch .",
+      "2. Identify the switch or contact facilities."
+    ],
+    "metadata": {
+      "category": "Room Facilities Questions",
+      "room": [
+        "General"
+      ]
+    }
+  },
+  {
+    "question": "The lighting is too dim/bright. Can it be adjusted?",
+    "answer": [
+      "1. Share the meeting room s/ light switch location.",
+      "2. Adjust via switch panel if not working contact support."
+    ],
+    "metadata": {
+      "category": "Room Facilities Questions",
+      "room": [
+        "General"
+      ]
+    }
+  },
+  {
+    "question": "The room is not clean. Can housekeeping attend?",
+    "answer": [
+      "2. Send a cleaning request."
+    ],
+    "metadata": {
+      "category": "Room Facilities Questions",
+      "room": [
+        "General"
+      ]
+    }
+  },
+  {
+    "question": "Need more chairs. Can more be arranged?",
+    "answer": [
+      "2. Send a seating request."
+    ],
+    "metadata": {
+      "category": "Room Facilities Questions",
+      "room": [
+        "General"
+      ]
+    }
+  },
+  {
+    "question": "How to connect the printer?",
+    "answer": [
+      "Visitor can\u2019t print documents . Has to share with an EFS HQ employee.",
+      "General printing steps",
+      "1. Locate the printer near your meeting room  use the map .",
+      "2. Connect via Wi -Fi. Select the EFS -FollowMe Printer.",
+      "3. Use the secret pin of the printer to print the documents.",
+      "4. Follow on -screen instructions."
+    ],
+    "metadata": {
+      "category": "Printer Questions",
+      "room": [
+        "General"
+      ]
+    }
+  },
+  {
+    "question": "How to get a print?",
+    "answer": [
+      "1. Send the document to the connected printer.",
+      "2. Follow on -screen instructions."
+    ],
+    "metadata": {
+      "category": "Printer Questions",
+      "room": [
+        "General"
+      ]
+    }
+  },
+  {
+    "question": "Can I extend the parking space booking?",
+    "answer": [
+      "The parking is free, so there is no need for booking extensions."
+    ],
+    "metadata": {
+      "category": "Parking Questions",
+      "room": [
+        "General"
+      ]
+    }
+  },
+  {
+    "question": "Can you help me navigate to the restroom/restaurant/Prayer room/Smoking area?",
+    "answer": [
+      "1. Display a map.",
+      "2. Highlight the route to the selected location.",
+      "How do I invite  a visitor? (host inviting the visitor)",
+      "1. Access https://apps.iwaa.co m.",
+      "2. Select the workplace module.",
+      "3. Select the visitor module.",
+      "4. Select the date and Add a visit by filling the form.",
+      "How to register a visitor? (Once the visitor is invited an email is send to him)",
+      "1. Access the url https://apps.iwaa.com .",
+      "2. Select the workplace.",
+      "3. Log in and click on \"Visitor Management\"",
+      "Begin by selecting the Visitor Management  module from the main menu .",
+      "4. Access the Dashboard",
+      "Once inside the module, navigate to the Dashboard  to view upcoming visits or schedule",
+      "a new one.",
+      "5. Click on \"Add Visit\"",
+      "To schedu le a new visit, click the Add Visit  button.",
+      "6. Register or Select Visitor",
+      "o If the visitor is already registered, search by name  to auto -fill their details.",
+      "o For new visitors, click on New Contact , fill in the required information, and click",
+      "Save Contact .",
+      "7. Altern atively, Use Map View for Booking",
+      "You may also go to the Map View  within the dashboard to select a meeting room",
+      "visually.",
+      "8. Select Meeting Room, Date & Time",
+      "Click on the meeting room where the meeting will be hosted, then choose the date and",
+      "time .",
+      "9. Enter Visi tor Details in \"Extra Details\"",
+      "Within the booking window, go to Extra Details  and enable the Visitor  option.",
+      "10. Add Internal Attendees (Optional)",
+      "Under Invite Attendees , you may include any internal team members attending the",
+      "meeting.",
+      "11. Add Pantry Services (Opti onal)",
+      "To request amenities like water, tea, or coffee , click the Services  tab and select the",
+      "desired options.",
+      "12. Visitor Receives Email to Confirm Details",
+      "The system sends an automated email to the visitor requesting them to confirm and",
+      "complete their detail s.",
+      "13. QR Code Sent Upon Confirmation",
+      "Once the visitor confirms, they receive a unique QR code  for access."
+    ],
+    "metadata": {
+      "category": "Navigation Questions",
+      "room": [
+        "General"
+      ]
+    }
+  },
+  {
+    "question": "How do I check in  a visitor?",
+    "answer": [
+      "1. Visitor Scans QR Code at Reception Kiosk",
+      "On arrival, the visitor scans the QR code at the self-service kiosk  at reception to  check",
+      "in.",
+      "2. Host Notification Upon Visitor Check -In",
+      "As soon as the visitor checks in, the host is automatically notified  of their arrival."
+    ],
+    "metadata": {
+      "category": "Navigation Questions",
+      "room": [
+        "General"
+      ]
+    }
+  },
+  {
+    "question": "Where can my guest collect their visitor pass?",
+    "answer": [
+      "1. After registration,",
+      "2. Guest can check in using the QR code."
+    ],
+    "metadata": {
+      "category": "Navigation Questions",
+      "room": [
+        "General"
+      ]
+    }
+  },
+  {
+    "question": "Can I get par king arranged for a visitor?",
+    "answer": [
+      "1. Visit https://apps.iwaa.com .",
+      "2. Use the portal to book visitor parking  space ."
+    ],
+    "metadata": {
+      "category": "Navigation Questions",
+      "room": [
+        "General"
+      ]
+    }
+  },
+  {
+    "question": "My visitor hasn't received the OTP/pass \u2014 can you resend it?",
+    "answer": [
+      "1. Ask the guest to check junk/spam folder.",
+      "2. Resend via the visitor management system. (Information shared above)"
+    ],
+    "metadata": {
+      "category": "Visitor Management Questions",
+      "room": [
+        "General"
+      ]
+    }
+  },
+  {
+    "question": "What is the General room?",
+    "answer": [
+      "The 'General' category is not a specific physical room.",
+      "It contains general office information, policies, and procedures that apply to the entire office or common areas.",
+      "If you are looking for a specific meeting room, please check the floor map."
+    ],
+    "metadata": {
+      "category": "General Information",
+      "room": [
+        "General"
+      ]
+    }
+  },
+  {
+    "question": "Information about General room",
+    "answer": [
+      "Queries related to 'General' refer to general office policies, visitor management instructions, and common-area facilities.",
+      "It is a catch-all category for information that isn't specific to a named meeting room like Transformation or Innovation."
+    ],
+    "metadata": {
+      "category": "General Information",
+      "room": [
+        "General"
+      ]
+    }
+  },
+  {
+    "question": "Do we have an HDMI cable connection?",
+    "answer": [
+      "Yes."
+    ],
+    "metadata": {
+      "category": "TV Questions",
+      "room": [
+        "Transformation",
+        "Innovation",
+        "Precision",
+        "Excellence",
+        "Passion",
+        "Integrity",
+        "Auditorium"
+      ]
+    }
+  },
+  {
+    "question": "Do we have an HDMI cable connection?",
+    "answer": [
+      "No."
+    ],
+    "metadata": {
+      "category": "TV Questions",
+      "room": [
+        "Ehsaas",
+        "Happiness",
+        "Wecan",
+        "Progression",
+        "Diversity",
+        "Prudence",
+        "Quality Assurance",
+        "Resilence",
+        "Governance",
+        "Peoples",
+        "Lean"
+      ]
+    }
+  },
+  {
+    "question": "Do we connect using Wi-Fi connection?",
+    "answer": [
+      "Yes."
+    ],
+    "metadata": {
+      "category": "TV Questions",
+      "room": [
+        "Transformation",
+        "Innovation",
+        "Precision",
+        "Excellence",
+        "Passion",
+        "Governance",
+        "Auditorium",
+        "Integrity"
+      ]
+    }
+  },
+  {
+    "question": "Do we connect using Wi-Fi connection?",
+    "answer": [
+      "No."
+    ],
+    "metadata": {
+      "category": "TV Questions",
+      "room": [
+        "Ehsaas",
+        "Happiness",
+        "Wecan",
+        "Progression",
+        "Diversity",
+        "Prudence",
+        "Quality Assurance",
+        "Resilence",
+        "Peoples",
+        "Lean"
+      ]
+    }
+  },
+  {
+    "question": "What are the connectivity options?",
+    "answer": [
+      "USB."
+    ],
+    "metadata": {
+      "category": "Video Conferencing Questions",
+      "room": [
+        "Transformation",
+        "Innovation",
+        "Precision",
+        "Excellence",
+        "Passion"
+      ]
+    }
+  },
+  {
+    "question": "What are the connectivity options?",
+    "answer": [
+      "HDMI with USB."
+    ],
+    "metadata": {
+      "category": "Video Conferencing Questions",
+      "room": [
+        "Governance"
+      ]
+    }
+  }
+]

@@ -1,0 +1,257 @@
+[
+  {
+    "question": "How do I check my ABC Bank account balance?",
+    "answer": [
+      "You can check your account balance through our Mobile Banking App, Internet Banking, an ATM, Missed Call Banking (if available), or by visiting your nearest branch.",
+      "For security purposes, you will first need to verify your identity before any balance information is shared."
+    ],
+    "metadata": {
+      "category": "Account & Balance Inquiries"
+    }
+  },
+  {
+    "question": "Where can I find my ABC account IFSC code and branch code?",
+    "answer": [
+      "Your 11-digit IFSC code and branch details are printed on the top left corner of your ABC Bank chequebook leaves.",
+      "They are also available on the first page of your passbook.",
+      "You can view them instantly on the account overview screen of your NetBanking dashboard."
+    ],
+    "metadata": {
+      "category": "Account & Balance Inquiries"
+    }
+  },
+  {
+    "question": "I lost my ABC Debit/Credit card. How do I block it immediately?",
+    "answer": [
+      "Please block your card immediately to secure your funds.",
+      "Via App: Login → Menu → Pay → Cards → Select your card → Block.",
+      "Via WhatsApp: Send 'Hi' to 70700-22222 and select 'Block Card'.",
+      "Via Call: Call 24x7 toll-free emergency numbers 1800-1600 or 1800-2600."
+    ],
+    "metadata": {
+      "category": "Security & Fraud"
+    }
+  },
+  {
+    "question": "How do I enable international transactions on my ABC Debit Card?",
+    "answer": [
+      "For security reasons, international usage is disabled by default.",
+      "Login to MobileBanking App.",
+      "Go to Cards.",
+      "Select your card.",
+      "Click Manage Limits.",
+      "Enable International Usage.",
+      "Set your preferred daily transaction limit."
+    ],
+    "metadata": {
+      "category": "Security & Fraud"
+    }
+  },
+  {
+    "question": "How do I check my ABC Credit Card outstanding balance and reward points?",
+    "answer": [
+      "You can manage everything through the MyCards portal or app.",
+      "For Outstanding Balance: Send SMS 'CCBAL <last 4 digits of card>' to 5676712.",
+      "For Reward Points: Send SMS 'CCRWD <last 4 digits of card>' to 5676712."
+    ],
+    "metadata": {
+      "category": "Loans & Credit Cards"
+    }
+  },
+  {
+    "question": "How do I pay my electricity bill using my ABC Bank account?",
+    "answer": [
+      "You can pay bills instantly using PayZapp or NetBanking.",
+      "Via NetBanking: Login → BillPay & Recharge → Electricity → Select provider → Enter Consumer Number → Pay.",
+      "Via PayZapp: Open app → Bills & Recharges → Select biller → Pay using linked account or credit card.",
+      "You can enable Auto-Pay to avoid missing due dates."
+    ],
+    "metadata": {
+      "category": "Bill Payments & Recharges"
+    }
+  },
+  {
+    "question": "My bill payment failed, but the money was deducted from my ABC Bank account. What should I do?",
+    "answer": [
+      "If a transaction fails at the biller's end, the money is securely refunded.",
+      "For UPI and NetBanking bill payments, refunds usually happen within 2 to 3 working days.",
+      "If you do not receive the refund within that period, raise a dispute and log a support ticket."
+    ],
+    "metadata": {
+      "category": "Bill Payments & Recharges"
+    }
+  },
+  {
+    "question": "How do I open a Fixed Deposit (FD) online with ABC Bank?",
+    "answer": [
+      "You can open an FD instantly without visiting a branch.",
+      "Login to Mobile Banking.",
+      "Go to Save.",
+      "Select Deposits.",
+      "Click Open Fixed Deposit.",
+      "Enter the desired amount (minimum ₹5,000).",
+      "Select the tenure.",
+      "Choose a nominee.",
+      "Funds will be transferred instantly from your savings account."
+    ],
+    "metadata": {
+      "category": "Fixed Deposits"
+    }
+  },
+  {
+    "question": "What are the current ABC Bank Fixed Deposit interest rates?",
+    "answer": [
+      "Domestic FD interest rates vary based on tenure.",
+      "For regular customers, rates range from 3.00% to 7.25% per annum.",
+      "Senior Citizens receive an additional 0.50% premium across all tenures.",
+      "Specific rate charts can be provided based on tenure."
+    ],
+    "metadata": {
+      "category": "Fixed Deposits"
+    }
+  },
+  {
+    "question": "Can I prematurely close or break my ABC Recurring Deposit (RD)?",
+    "answer": [
+      "Yes, you can prematurely close your RD through NetBanking.",
+      "Navigate to Transact → Liquidate Recurring Deposit.",
+      "A premature closure penalty of 1% on the applicable interest rate will be charged for the period the deposit remained with the bank."
+    ],
+    "metadata": {
+      "category": "Recurring Deposits"
+    }
+  },
+  {
+    "question": "How can I get my account statement?",
+    "answer": [
+      "You can download your account statement through Internet Banking or Mobile Banking.",
+      "Alternatively, you may visit your nearest branch and request a statement."
+    ],
+    "metadata": {
+      "category": "Account & KYC Management"
+    }
+  },
+  {
+    "question": "How do I update my registered mobile number?",
+    "answer": [
+      "You can update your registered mobile number by visiting your home branch with a valid identity proof.",
+      "If digital update services are available, you may also use those channels."
+    ],
+    "metadata": {
+      "category": "Account & KYC Management"
+    }
+  },
+  {
+    "question": "How do I update my email address?",
+    "answer": [
+      "You can update your email address through Internet Banking, Mobile Banking, or by submitting a request at your branch."
+    ],
+    "metadata": {
+      "category": "Account & KYC Management"
+    }
+  },
+  {
+    "question": "What is the minimum balance requirement for my account?",
+    "answer": [
+      "The minimum balance requirement depends on the type of account you hold.",
+      "You may refer to the bank's schedule of charges for detailed information based on your account type."
+    ],
+    "metadata": {
+      "category": "Account & KYC Management"
+    }
+  },
+  {
+    "question": "How can I apply for a cheque book?",
+    "answer": [
+      "You can request a cheque book through Mobile Banking, Internet Banking, Customer Care, or by visiting a branch.",
+      "Once processed, it will be delivered to your registered address."
+    ],
+    "metadata": {
+      "category": "Account & KYC Management"
+    }
+  },
+  {
+    "question": "How can I add or update a nominee?",
+    "answer": [
+      "Nominee details can be added or updated by submitting a request at your branch or through digital banking channels, where available."
+    ],
+    "metadata": {
+      "category": "Account & KYC Management"
+    }
+  },
+  {
+    "question": "Why is my account frozen or restricted?",
+    "answer": [
+      "Accounts may be restricted due to incomplete KYC, regulatory requirements, court or government directives, or security concerns.",
+      "Please contact customer support or visit your branch for further assistance."
+    ],
+    "metadata": {
+      "category": "Account & KYC Management"
+    }
+  },
+  {
+    "question": "How can I close my account?",
+    "answer": [
+      "To close your account, please visit your branch and submit an account closure request.",
+      "Kindly ensure that all dues and charges have been cleared before closure."
+    ],
+    "metadata": {
+      "category": "Account & KYC Management"
+    }
+  },
+  {
+    "question": "How can I complete my KYC?",
+    "answer": [
+      "You can complete your KYC by visiting a branch with the required documents, using online KYC services if offered by the bank, or through Video KYC where available."
+    ],
+    "metadata": {
+      "category": "Account & KYC Management"
+    }
+  },
+  {
+    "question": "What documents are required for KYC?",
+    "answer": [
+      "Commonly accepted KYC documents include Aadhaar Card, Passport, Voter ID, Driving License, and PAN Card as identity proof."
+    ],
+    "metadata": {
+      "category": "Account & KYC Management"
+    }
+  },
+  {
+    "question": "My account is marked as KYC pending. What should I do?",
+    "answer": [
+      "Please submit the required KYC documents through the bank's approved channels as soon as possible to avoid any service restrictions."
+    ],
+    "metadata": {
+      "category": "Account & KYC Management"
+    }
+  },
+  {
+    "question": "How long does KYC verification take?",
+    "answer": [
+      "KYC verification is typically completed within one working day after successful document submission, subject to verification requirements."
+    ],
+    "metadata": {
+      "category": "Account & KYC Management"
+    }
+  },
+  {
+    "question": "Can I complete KYC online?",
+    "answer": [
+      "Yes, absolutely. If your bank offers Digital KYC or Video KYC services, you may complete the process online.",
+      "Please check your eligibility through the bank's website or mobile application."
+    ],
+    "metadata": {
+      "category": "Account & KYC Management"
+    }
+  },
+  {
+    "question": "What happens if I do not update my KYC?",
+    "answer": [
+      "Failure to update your KYC may result in restrictions on account operations, transactions, or access to certain banking services."
+    ],
+    "metadata": {
+      "category": "Account & KYC Management"
+    }
+  }
+]

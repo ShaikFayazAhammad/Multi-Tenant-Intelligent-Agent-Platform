@@ -1,0 +1,493 @@
+INFO:agents.base_agent:[OrchestratorAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[OrchestratorAgent] OpenAI Client initialized successfully for OrchestratorAgent
+INFO:agents.base_agent:[APIAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[APIAgent] OpenAI Client initialized successfully for APIAgent
+INFO:agents.base_agent:[FAQAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[FAQAgent] OpenAI Client initialized successfully for FAQAgent
+INFO:     Started server process [647627]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8247 (Press CTRL+C to quit)
+INFO:     13.232.11.112:50936 - "WebSocket /ws?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBMTAyMSIsImVtYWlsIjoiYW5rdXIuc3JpdmFzdGF2YUBoYWxvb2NvbS5jb20iLCJuYW1lIjoiQW5rdXIiLCJkZXB0IjoiRW5nZyIsInJvbGUiOiJNYW5hZ2VyIiwiZmxvb3IiOiJHcm91bmQgRmxvb3IiLCJyb29tIjoiRWhzYWFzIiwiaXNzIjoiaGV4YS1sb2NhbCIsImF1ZCI6ImhleGEtY2xpZW50Iiwic2VydmljZXMiOlsidm1zIiwiYmFua2luZyIsImNoYXQiLCJ2b2ljZSIsIndlYnNvY2tldCJdLCJleHAiOjE3ODQ0Mzk0MjYsImlhdCI6MTc4MTg0NzQyNiwianRpIjoiODQ0ZDUzZDktNGE2ZC00YTc5LTgyYWMtY2QzYWY3NTU2MzE3In0.oeRe6c1tyS1C2J9mskr5RsYXodH-9-Z2l2ldAkQnkW0" [accepted]
+INFO:__main__:WebSocket registered for session: b2e0baef-efaf-45cd-828a-6f58b6f00173
+INFO:__main__:
+================================================================================
+INFO:__main__:WebSocket Connected - Session: b2e0baef-efaf-45cd-828a-6f58b6f00173
+INFO:__main__:   Access token from URL: ***2ldAkQnkW0
+INFO:__main__:================================================================================
+INFO:     connection open
+INFO:     13.232.11.112:50944 - "WebSocket /ws?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIYWxvb2NvbTEiLCJlbWFpbCI6ImFkbWluQGhhbG9vY29tLmNvbSIsIm5hbWUiOiJBZG1pbiIsImRlcHQiOiJBSSIsInJvbGUiOiJBSSIsImZsb29yIjoiR3JvdW5kIEZsb29yIiwicm9vbSI6IkVoc2FhcyIsImlzcyI6ImhleGEtbG9jYWwiLCJhdWQiOiJoZXhhLWNsaWVudCIsInNlcnZpY2VzIjpbInZtcyIsImJhbmtpbmciLCJjaGF0Iiwidm9pY2UiLCJ3ZWJzb2NrZXQiXSwiZXhwIjoxNzg0NDQ1NDA0LCJpYXQiOjE3ODE4NTM0MDQsImp0aSI6IjgyZTU1OTdkLTAyM2ItNDVlZS1iODNmLTZiM2Q5ZDE5OWM1YSJ9.d-MgmPBvQwmjcUwn7G7bdypeVFfhcPR8kcLRcePqRNM" [accepted]
+INFO:__main__:WebSocket registered for session: ed341741-d6d6-4a4d-9d9b-2259d6a0cacd
+INFO:__main__:
+================================================================================
+INFO:__main__:WebSocket Connected - Session: ed341741-d6d6-4a4d-9d9b-2259d6a0cacd
+INFO:__main__:   Access token from URL: ***cLRcePqRNM
+INFO:__main__:================================================================================
+INFO:     connection open
+INFO:__main__:
+WebSocket Disconnected: ed341741-d6d6-4a4d-9d9b-2259d6a0cacd
+INFO:__main__:WebSocket unregistered for session: ed341741-d6d6-4a4d-9d9b-2259d6a0cacd
+INFO:     connection closed
+INFO:     13.232.11.112:59394 - "WebSocket /ws?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIYWxvb2NvbTEiLCJlbWFpbCI6ImFkbWluQGhhbG9vY29tLmNvbSIsIm5hbWUiOiJBZG1pbiIsImRlcHQiOiJBSSIsInJvbGUiOiJBSSIsImZsb29yIjoiR3JvdW5kIEZsb29yIiwicm9vbSI6IkVoc2FhcyIsImlzcyI6ImhleGEtbG9jYWwiLCJhdWQiOiJoZXhhLWNsaWVudCIsInNlcnZpY2VzIjpbInZtcyIsImJhbmtpbmciLCJjaGF0Iiwidm9pY2UiLCJ3ZWJzb2NrZXQiXSwiZXhwIjoxNzg0NDQ1NDA0LCJpYXQiOjE3ODE4NTM0MDQsImp0aSI6IjgyZTU1OTdkLTAyM2ItNDVlZS1iODNmLTZiM2Q5ZDE5OWM1YSJ9.d-MgmPBvQwmjcUwn7G7bdypeVFfhcPR8kcLRcePqRNM" [accepted]
+INFO:__main__:WebSocket registered for session: ed533763-307b-4107-82fa-e6eb5fb394ba
+INFO:__main__:
+================================================================================
+INFO:__main__:WebSocket Connected - Session: ed533763-307b-4107-82fa-e6eb5fb394ba
+INFO:__main__:   Access token from URL: ***cLRcePqRNM
+INFO:__main__:================================================================================
+INFO:     connection open
+INFO:__main__:Message keys: ['type', 'payload', 'access_token', 'source', 'isVoiceInput']
+INFO:__main__:[WS] local_storage_info built from JWT fallback | user: admin@haloocom.com
+INFO:__main__:
+WebSocket Message | Session: ed533763-307b-4107-82fa-e6eb5fb394ba | User: admin@haloocom.com (Haloocom1)
+INFO:__main__:   Query: how to check my account balance...
+INFO:__main__:Starting multi-agent workflow...
+INFO:agents.base_agent:[OrchestratorAgent] Processing query: how to check my account balance
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:agents.base_agent:[OrchestratorAgent] Routing decision: {'intent': 'bank_faq_balance_check', 'requires_api': False, 'next_agent': 'faq_agent', 'reasoning': 'The user is asking for information on how to check their account balance, which does not require live data and falls under general banking FAQs.', 'workflow_state': 'initial', 'pending_intent': None}
+INFO:graph.workflow:Routing to: faq_agent
+INFO:agents.base_agent:[FAQAgent] Processing FAQ query: how to check my account balance (Intent: bank_faq_balance_check)
+INFO:httpx:HTTP Request: POST http://localhost:8245/ask-abc "HTTP/1.1 200 OK"
+INFO:agents.base_agent:[FAQAgent] [DEBUG] RAG raw response: {'answer': 'You can check your account balance through our Mobile Banking App, Internet Banking, an ATM, Missed Call Banking (if available), or by visiting your nearest branch. For security purposes, you will first need to verify your identity before any balance information is shared.', 'source_location': 'abc_bank_faqs', 'performance': {'response_time': 1.52}, 'raw_results': ['Question: How do I check my ABC Bank account balance?\nAnswer: You can check your account balance through our Mobile Banking App, Internet Banking, an ATM, Missed Call Banking (if available), or by visiting your nearest branch. For security purposes, you will first need to verify your identity before any balance information is shared.', "Question: How do I check my ABC Bank account balance?\nAnswer: You can check your balance instantly in a few ways: Log into the ABC Bank MobileBanking App or NetBanking. Give a missed call to 1800-270-3333 from your registered mobile number. Send an SMS saying 'BAL' to 5676712. Would you like guidance on registering for SMS banking?", "Question: How do I check my ABC Credit Card outstanding balance and reward points?\nAnswer: You can manage everything through the MyCards portal or app. For Outstanding Balance: Send SMS 'CCBAL <last 4 digits of card>' to 5676712. For Reward Points: Send SMS 'CCRWD <last 4 digits of card>' to 5676712."]}
+INFO:agents.base_agent:[FAQAgent] Final Response: You can check your account balance through our Mob...
+INFO:__main__:Persisting session: ed533763-307b-4107-82fa-e6eb5fb394ba | user=Haloocom1 | room=Ehsaas | local_storage=YES | refresh_token=NO
+INFO:services.database_service:💾 save_session OK | session=ed533763-307b-4107-82fa-e6eb5fb394ba | user=Haloocom1 | email=admin@haloocom.com | room=Ehsaas | local_storage=YES | chat_msgs=2
+INFO:__main__:Session persisted - 2 messages: ed533763-307b-4107-82fa-e6eb5fb394ba
+INFO:__main__:Workflow complete | Intent: bank_faq_balance_check | Agent: faq_agent
+INFO:__main__:Streaming 19 chunks...
+INFO:__main__:Generating ElevenLabs TTS for: You can check your account balance through our Mob...
+INFO:__main__:Audio sent successfully
+INFO:__main__:================================================================================
+
+INFO:__main__:Message keys: ['type', 'payload', 'access_token', 'source', 'isVoiceInput']
+INFO:__main__:[WS] local_storage_info built from JWT fallback | user: admin@haloocom.com
+INFO:__main__:
+WebSocket Message | Session: ed533763-307b-4107-82fa-e6eb5fb394ba | User: admin@haloocom.com (Haloocom1)
+INFO:__main__:   Query: I want coffee...
+INFO:__main__:Loaded 2 messages from DB: ed533763-307b-4107-82fa-e6eb5fb394ba
+INFO:__main__:Starting multi-agent workflow...
+INFO:agents.base_agent:[OrchestratorAgent] Processing query: I want coffee
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:agents.base_agent:[OrchestratorAgent] Routing decision: {'intent': 'pantry', 'requires_api': True, 'next_agent': 'api_agent', 'reasoning': 'The user is requesting coffee, which falls under food/beverage ordering, requiring pantry API.', 'workflow_state': 'initial', 'pending_intent': None}
+INFO:graph.workflow:Routing to: api_agent
+INFO:agents.base_agent:[APIAgent] Processing API query: I want coffee
+INFO:agents.base_agent:[APIAgent] 🔑 Injected into tools | user_id=Haloocom1 | user_email= | session_id=ed533763-307b-4107-82fa-e6eb5fb394ba
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-19 13:05:21,123 | INFO | tools.pantry_tool | PantryMenuTool invoked
+INFO:tools.pantry_tool:PantryMenuTool invoked
+2026-06-19 13:05:21,123 | DEBUG | tools.pantry_tool | Endpoint: /yarooms/services?type=1
+DEBUG:tools.pantry_tool:Endpoint: /yarooms/services?type=1
+2026-06-19 13:05:21,123 | DEBUG | tools.pantry_tool | Headers: {'customerId': 'bdb6c41e-2b82-4299-a256-e347cbb060d5', 'Ocp-Apim-Subscription-Key': '6371cad18f114c17a4168edb5fecf286'}
+DEBUG:tools.pantry_tool:Headers: {'customerId': 'bdb6c41e-2b82-4299-a256-e347cbb060d5', 'Ocp-Apim-Subscription-Key': '6371cad18f114c17a4168edb5fecf286'}
+INFO:services.api_service:GET http://localhost:8246/yarooms/services?type=1
+DEBUG:services.api_service:--- API GET DEBUG ---
+DEBUG:services.api_service:URL: http://localhost:8246/yarooms/services?type=1
+DEBUG:services.api_service:Params: None
+DEBUG:services.api_service:Params: {'customerId': 'bdb6c41e-2b82-4299-a256-e347cbb060d5', 'Ocp-Apim-Subscription-Key': '6371cad18f114c17a4168edb5fecf286'}
+DEBUG:services.api_service:Status: 200
+DEBUG:services.api_service:Response: {
+  "data": {
+    "list": [
+      {
+        "id": 1,
+        "name": "Black Coffee"
+      },
+      {
+        "id": 2,
+        "name": "Milk Coffee"
+      },
+      {
+        "id": 3,
+        "name": "Green Tea"
+      },
+      {
+        "id": 4,
+        "name": "Black Tea"
+      },
+      {
+        "id": 5,
+        "name": "Bottled Water (Chilled)"
+      },
+      {
+        "id": 6,
+        "name": "Bottled Water (Room Temperature)"
+      }
+    ]
+  }
+}
+
+DEBUG:services.api_service:--------------------
+2026-06-19 13:05:21,126 | DEBUG | tools.pantry_tool | Raw API response: {'data': {'list': [{'id': 1, 'name': 'Black Coffee'}, {'id': 2, 'name': 'Milk Coffee'}, {'id': 3, 'name': 'Green Tea'}, {'id': 4, 'name': 'Black Tea'}, {'id': 5, 'name': 'Bottled Water (Chilled)'}, {'id': 6, 'name': 'Bottled Water (Room Temperature)'}]}}
+DEBUG:tools.pantry_tool:Raw API response: {'data': {'list': [{'id': 1, 'name': 'Black Coffee'}, {'id': 2, 'name': 'Milk Coffee'}, {'id': 3, 'name': 'Green Tea'}, {'id': 4, 'name': 'Black Tea'}, {'id': 5, 'name': 'Bottled Water (Chilled)'}, {'id': 6, 'name': 'Bottled Water (Room Temperature)'}]}}
+2026-06-19 13:05:21,126 | INFO | tools.pantry_tool | Pantry menu fetched successfully | items=6
+INFO:tools.pantry_tool:Pantry menu fetched successfully | items=6
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:agents.base_agent:[APIAgent] Tools used: ['get_pantry_menu']
+INFO:agents.base_agent:[APIAgent] API Agent response: Here are the coffee options available:
+
+1. Black Coffee
+2. Milk Coffee
+
+Which one would you like and...
+INFO:__main__:Persisting session: ed533763-307b-4107-82fa-e6eb5fb394ba | user=Haloocom1 | room=Ehsaas | local_storage=YES | refresh_token=NO
+INFO:services.database_service:💾 save_session OK | session=ed533763-307b-4107-82fa-e6eb5fb394ba | user=Haloocom1 | email=admin@haloocom.com | room=Ehsaas | local_storage=YES | chat_msgs=4
+INFO:__main__:Session persisted - 4 messages: ed533763-307b-4107-82fa-e6eb5fb394ba
+INFO:__main__:Workflow complete | Intent: pantry | Agent: api_agent
+INFO:__main__:Streaming 10 chunks...
+INFO:__main__:Generating ElevenLabs TTS for: Here are the coffee options available:
+
+1. Black C...
+INFO:__main__:Audio sent successfully
+INFO:__main__:================================================================================
+
+INFO:__main__:Message keys: ['type', 'payload', 'access_token', 'source', 'isVoiceInput']
+INFO:__main__:[WS] local_storage_info built from JWT fallback | user: admin@haloocom.com
+INFO:__main__:
+WebSocket Message | Session: ed533763-307b-4107-82fa-e6eb5fb394ba | User: admin@haloocom.com (Haloocom1)
+INFO:__main__:   Query: auto cups of black coffee...
+INFO:__main__:Loaded 4 messages from DB: ed533763-307b-4107-82fa-e6eb5fb394ba
+INFO:__main__:Starting multi-agent workflow...
+INFO:agents.base_agent:[OrchestratorAgent] Processing query: auto cups of black coffee
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:agents.base_agent:[OrchestratorAgent] Routing decision: {'intent': 'pantry', 'requires_api': True, 'next_agent': 'api_agent', 'reasoning': 'The user is requesting a specific quantity of black coffee, which requires an API call to order food/beverages.', 'workflow_state': 'in_progress', 'pending_intent': None}
+INFO:graph.workflow:Routing to: api_agent
+INFO:agents.base_agent:[APIAgent] Processing API query: auto cups of black coffee
+INFO:agents.base_agent:[APIAgent] 🔑 Injected into tools | user_id=Haloocom1 | user_email= | session_id=ed533763-307b-4107-82fa-e6eb5fb394ba
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-19 13:05:38,056 | INFO | tools.pantry_tool | PantryMenuTool invoked
+INFO:tools.pantry_tool:PantryMenuTool invoked
+2026-06-19 13:05:38,056 | DEBUG | tools.pantry_tool | Endpoint: /yarooms/services?type=1
+DEBUG:tools.pantry_tool:Endpoint: /yarooms/services?type=1
+2026-06-19 13:05:38,056 | DEBUG | tools.pantry_tool | Headers: {'customerId': 'bdb6c41e-2b82-4299-a256-e347cbb060d5', 'Ocp-Apim-Subscription-Key': '6371cad18f114c17a4168edb5fecf286'}
+DEBUG:tools.pantry_tool:Headers: {'customerId': 'bdb6c41e-2b82-4299-a256-e347cbb060d5', 'Ocp-Apim-Subscription-Key': '6371cad18f114c17a4168edb5fecf286'}
+INFO:services.api_service:GET http://localhost:8246/yarooms/services?type=1
+DEBUG:services.api_service:--- API GET DEBUG ---
+DEBUG:services.api_service:URL: http://localhost:8246/yarooms/services?type=1
+DEBUG:services.api_service:Params: None
+DEBUG:services.api_service:Params: {'customerId': 'bdb6c41e-2b82-4299-a256-e347cbb060d5', 'Ocp-Apim-Subscription-Key': '6371cad18f114c17a4168edb5fecf286'}
+DEBUG:services.api_service:Status: 200
+DEBUG:services.api_service:Response: {
+  "data": {
+    "list": [
+      {
+        "id": 1,
+        "name": "Black Coffee"
+      },
+      {
+        "id": 2,
+        "name": "Milk Coffee"
+      },
+      {
+        "id": 3,
+        "name": "Green Tea"
+      },
+      {
+        "id": 4,
+        "name": "Black Tea"
+      },
+      {
+        "id": 5,
+        "name": "Bottled Water (Chilled)"
+      },
+      {
+        "id": 6,
+        "name": "Bottled Water (Room Temperature)"
+      }
+    ]
+  }
+}
+
+DEBUG:services.api_service:--------------------
+2026-06-19 13:05:38,064 | DEBUG | tools.pantry_tool | Raw API response: {'data': {'list': [{'id': 1, 'name': 'Black Coffee'}, {'id': 2, 'name': 'Milk Coffee'}, {'id': 3, 'name': 'Green Tea'}, {'id': 4, 'name': 'Black Tea'}, {'id': 5, 'name': 'Bottled Water (Chilled)'}, {'id': 6, 'name': 'Bottled Water (Room Temperature)'}]}}
+DEBUG:tools.pantry_tool:Raw API response: {'data': {'list': [{'id': 1, 'name': 'Black Coffee'}, {'id': 2, 'name': 'Milk Coffee'}, {'id': 3, 'name': 'Green Tea'}, {'id': 4, 'name': 'Black Tea'}, {'id': 5, 'name': 'Bottled Water (Chilled)'}, {'id': 6, 'name': 'Bottled Water (Room Temperature)'}]}}
+2026-06-19 13:05:38,064 | INFO | tools.pantry_tool | Pantry menu fetched successfully | items=6
+INFO:tools.pantry_tool:Pantry menu fetched successfully | items=6
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:agents.base_agent:[APIAgent] Tools used: ['get_pantry_menu']
+INFO:agents.base_agent:[APIAgent] API Agent response: It seems there was a misunderstanding with your request. Here are the available coffee options:
+
+1. ...
+INFO:__main__:Persisting session: ed533763-307b-4107-82fa-e6eb5fb394ba | user=Haloocom1 | room=Ehsaas | local_storage=YES | refresh_token=NO
+INFO:services.database_service:💾 save_session OK | session=ed533763-307b-4107-82fa-e6eb5fb394ba | user=Haloocom1 | email=admin@haloocom.com | room=Ehsaas | local_storage=YES | chat_msgs=6
+INFO:__main__:Session persisted - 6 messages: ed533763-307b-4107-82fa-e6eb5fb394ba
+INFO:__main__:Workflow complete | Intent: pantry | Agent: api_agent
+INFO:__main__:Streaming 13 chunks...
+INFO:__main__:Generating ElevenLabs TTS for: It seems there was a misunderstanding with your re...
+INFO:__main__:Audio sent successfully
+INFO:__main__:================================================================================
+
+INFO:__main__:Message keys: ['type', 'payload', 'access_token', 'source', 'isVoiceInput']
+INFO:__main__:[WS] local_storage_info built from JWT fallback | user: admin@haloocom.com
+INFO:__main__:
+WebSocket Message | Session: ed533763-307b-4107-82fa-e6eb5fb394ba | User: admin@haloocom.com (Haloocom1)
+INFO:__main__:   Query: two cups of black coffee...
+INFO:__main__:Loaded 6 messages from DB: ed533763-307b-4107-82fa-e6eb5fb394ba
+INFO:__main__:Starting multi-agent workflow...
+INFO:agents.base_agent:[OrchestratorAgent] Processing query: two cups of black coffee
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:agents.base_agent:[OrchestratorAgent] Routing decision: {'intent': 'pantry', 'requires_api': True, 'next_agent': 'api_agent', 'reasoning': 'The user is requesting two cups of black coffee, which requires an API call to order food/beverages.', 'workflow_state': 'in_progress', 'pending_intent': None}
+INFO:graph.workflow:Routing to: api_agent
+INFO:agents.base_agent:[APIAgent] Processing API query: two cups of black coffee
+INFO:agents.base_agent:[APIAgent] 🔑 Injected into tools | user_id=Haloocom1 | user_email= | session_id=ed533763-307b-4107-82fa-e6eb5fb394ba
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-06-19 13:06:06,382 | INFO | tools.pantry_tool | PantryMenuTool invoked
+INFO:tools.pantry_tool:PantryMenuTool invoked
+2026-06-19 13:06:06,382 | DEBUG | tools.pantry_tool | Endpoint: /yarooms/services?type=1
+DEBUG:tools.pantry_tool:Endpoint: /yarooms/services?type=1
+2026-06-19 13:06:06,383 | DEBUG | tools.pantry_tool | Headers: {'customerId': 'bdb6c41e-2b82-4299-a256-e347cbb060d5', 'Ocp-Apim-Subscription-Key': '6371cad18f114c17a4168edb5fecf286'}
+DEBUG:tools.pantry_tool:Headers: {'customerId': 'bdb6c41e-2b82-4299-a256-e347cbb060d5', 'Ocp-Apim-Subscription-Key': '6371cad18f114c17a4168edb5fecf286'}
+INFO:services.api_service:GET http://localhost:8246/yarooms/services?type=1
+DEBUG:services.api_service:--- API GET DEBUG ---
+DEBUG:services.api_service:URL: http://localhost:8246/yarooms/services?type=1
+DEBUG:services.api_service:Params: None
+DEBUG:services.api_service:Params: {'customerId': 'bdb6c41e-2b82-4299-a256-e347cbb060d5', 'Ocp-Apim-Subscription-Key': '6371cad18f114c17a4168edb5fecf286'}
+DEBUG:services.api_service:Status: 200
+DEBUG:services.api_service:Response: {
+  "data": {
+    "list": [
+      {
+        "id": 1,
+        "name": "Black Coffee"
+      },
+      {
+        "id": 2,
+        "name": "Milk Coffee"
+      },
+      {
+        "id": 3,
+        "name": "Green Tea"
+      },
+      {
+        "id": 4,
+        "name": "Black Tea"
+      },
+      {
+        "id": 5,
+        "name": "Bottled Water (Chilled)"
+      },
+      {
+        "id": 6,
+        "name": "Bottled Water (Room Temperature)"
+      }
+    ]
+  }
+}
+
+DEBUG:services.api_service:--------------------
+2026-06-19 13:06:06,389 | DEBUG | tools.pantry_tool | Raw API response: {'data': {'list': [{'id': 1, 'name': 'Black Coffee'}, {'id': 2, 'name': 'Milk Coffee'}, {'id': 3, 'name': 'Green Tea'}, {'id': 4, 'name': 'Black Tea'}, {'id': 5, 'name': 'Bottled Water (Chilled)'}, {'id': 6, 'name': 'Bottled Water (Room Temperature)'}]}}
+DEBUG:tools.pantry_tool:Raw API response: {'data': {'list': [{'id': 1, 'name': 'Black Coffee'}, {'id': 2, 'name': 'Milk Coffee'}, {'id': 3, 'name': 'Green Tea'}, {'id': 4, 'name': 'Black Tea'}, {'id': 5, 'name': 'Bottled Water (Chilled)'}, {'id': 6, 'name': 'Bottled Water (Room Temperature)'}]}}
+2026-06-19 13:06:06,390 | INFO | tools.pantry_tool | Pantry menu fetched successfully | items=6
+INFO:tools.pantry_tool:Pantry menu fetched successfully | items=6
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:tools.staff_email_cache:Refreshing staff email cache from GetStaffs API
+INFO:services.api_service:GET http://localhost:8246/staff/GetStaffs
+INFO:services.api_service:Params: {'customerId': 'bdb6c41e-2b82-4299-a256-e347cbb060d5'}
+DEBUG:services.api_service:--- API GET DEBUG ---
+DEBUG:services.api_service:URL: http://localhost:8246/staff/GetStaffs
+DEBUG:services.api_service:Params: {'customerId': 'bdb6c41e-2b82-4299-a256-e347cbb060d5'}
+DEBUG:services.api_service:Params: {'Ocp-Apim-Subscription-Key': '6371cad18f114c17a4168edb5fecf286'}
+DEBUG:services.api_service:Status: 200
+DEBUG:services.api_service:Response: {
+  "data": [
+    {
+      "category": "Pantry",
+      "email": "pantry@efsme.com"
+    },
+    {
+      "category": "IT",
+      "email": "it.support@efsme.com"
+    },
+    {
+      "category": "Housekeeping",
+      "email": "housekeeping@efsme.com"
+    },
+    {
+      "category": "Facilities",
+      "email": "facilities@efsme.com"
+    }
+  ]
+}
+
+DEBUG:services.api_service:--------------------
+INFO:tools.staff_email_cache:Staff email cache updated: pantry=1, it=2, housekeeping=1
+2026-06-19 13:06:07,649 | INFO | tools.pantry_tool | PantryOrderTool: Sending notification to http://localhost:8246/notification/create
+INFO:tools.pantry_tool:PantryOrderTool: Sending notification to http://localhost:8246/notification/create
+2026-06-19 13:06:07,649 | DEBUG | tools.pantry_tool | PantryOrderTool payload: {'id': '212aba09-73bc-4b18-821e-e6157eac4eb5', 'title': 'Pantry Request', 'message': 'Pantry order: 2 cups of Black Coffee (Deliver to: Ehsaas)', 'type': 'pantry', 'to': 'pantry@efsme.com'}
+DEBUG:tools.pantry_tool:PantryOrderTool payload: {'id': '212aba09-73bc-4b18-821e-e6157eac4eb5', 'title': 'Pantry Request', 'message': 'Pantry order: 2 cups of Black Coffee (Deliver to: Ehsaas)', 'type': 'pantry', 'to': 'pantry@efsme.com'}
+INFO:services.api_service:POST http://localhost:8246/notification/create
+DEBUG:services.api_service:Headers: {'Accept': 'application/json', 'Content-Type': 'application/json', 'Ocp-Apim-Subscription-Key': '6371cad18f114c17a4168edb5fecf286', 'customerId': 'bdb6c41e-2b82-4299-a256-e347cbb060d5', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIYWxvb2NvbTEiLCJlbWFpbCI6ImFkbWluQGhhbG9vY29tLmNvbSIsIm5hbWUiOiJBZG1pbiIsImRlcHQiOiJBSSIsInJvbGUiOiJBSSIsImZsb29yIjoiR3JvdW5kIEZsb29yIiwicm9vbSI6IkVoc2FhcyIsImlzcyI6ImhleGEtbG9jYWwiLCJhdWQiOiJoZXhhLWNsaWVudCIsInNlcnZpY2VzIjpbInZtcyIsImJhbmtpbmciLCJjaGF0Iiwidm9pY2UiLCJ3ZWJzb2NrZXQiXSwiZXhwIjoxNzg0NDQ1NDA0LCJpYXQiOjE3ODE4NTM0MDQsImp0aSI6IjgyZTU1OTdkLTAyM2ItNDVlZS1iODNmLTZiM2Q5ZDE5OWM1YSJ9.d-MgmPBvQwmjcUwn7G7bdypeVFfhcPR8kcLRcePqRNM'}
+DEBUG:services.api_service:JSON Payload: {'id': '212aba09-73bc-4b18-821e-e6157eac4eb5', 'title': 'Pantry Request', 'message': 'Pantry order: 2 cups of Black Coffee (Deliver to: Ehsaas)', 'type': 'pantry', 'to': 'pantry@efsme.com'}
+DEBUG:services.api_service:--- API POST DEBUG ---
+DEBUG:services.api_service:URL: http://localhost:8246/notification/create
+DEBUG:services.api_service:Payload: {'id': '212aba09-73bc-4b18-821e-e6157eac4eb5', 'title': 'Pantry Request', 'message': 'Pantry order: 2 cups of Black Coffee (Deliver to: Ehsaas)', 'type': 'pantry', 'to': 'pantry@efsme.com'}
+DEBUG:services.api_service:Status: 201
+DEBUG:services.api_service:Response: {
+  "created_at": "2026-06-19T07:36:07.650997",
+  "id": "212aba09-73bc-4b18-821e-e6157eac4eb5",
+  "message": "Pantry order: 2 cups of Black Coffee (Deliver to: Ehsaas)",
+  "status": "Notification accepted",
+  "success": true,
+  "title": "Pantry Request",
+  "to": "pantry@efsme.com",
+  "type": "pantry"
+}
+
+DEBUG:services.api_service:---------------------
+2026-06-19 13:06:07,651 | INFO | tools.pantry_tool | PantryOrderTool response: {'created_at': '2026-06-19T07:36:07.650997', 'id': '212aba09-73bc-4b18-821e-e6157eac4eb5', 'message': 'Pantry order: 2 cups of Black Coffee (Deliver to: Ehsaas)', 'status': 'Notification accepted', 'success': True, 'title': 'Pantry Request', 'to': 'pantry@efsme.com', 'type': 'pantry'}
+INFO:tools.pantry_tool:PantryOrderTool response: {'created_at': '2026-06-19T07:36:07.650997', 'id': '212aba09-73bc-4b18-821e-e6157eac4eb5', 'message': 'Pantry order: 2 cups of Black Coffee (Deliver to: Ehsaas)', 'status': 'Notification accepted', 'success': True, 'title': 'Pantry Request', 'to': 'pantry@efsme.com', 'type': 'pantry'}
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:agents.base_agent:[APIAgent] Tools used: ['get_pantry_menu', 'send_pantry_order']
+INFO:agents.base_agent:[APIAgent] API Agent response: ✅ Your order for 2 cups of Black Coffee has been sent to the pantry team! Enjoy your coffee!...
+INFO:__main__:Persisting session: ed533763-307b-4107-82fa-e6eb5fb394ba | user=Haloocom1 | room=Ehsaas | local_storage=YES | refresh_token=NO
+INFO:services.database_service:💾 save_session OK | session=ed533763-307b-4107-82fa-e6eb5fb394ba | user=Haloocom1 | email=admin@haloocom.com | room=Ehsaas | local_storage=YES | chat_msgs=8
+INFO:__main__:Session persisted - 8 messages: ed533763-307b-4107-82fa-e6eb5fb394ba
+INFO:__main__:Workflow complete | Intent: pantry | Agent: api_agent
+INFO:__main__:Streaming 7 chunks...
+INFO:__main__:Generating ElevenLabs TTS for: ✅ Your order for 2 cups of Black Coffee has been s...
+INFO:__main__:Audio sent successfully
+INFO:__main__:================================================================================
+
+INFO:__main__:Message keys: ['type', 'payload', 'access_token', 'source', 'isVoiceInput']
+INFO:__main__:[WS] local_storage_info built from JWT fallback | user: admin@haloocom.com
+INFO:__main__:
+WebSocket Message | Session: ed533763-307b-4107-82fa-e6eb5fb394ba | User: admin@haloocom.com (Haloocom1)
+INFO:__main__:   Query: registered mobile number...
+INFO:__main__:Loaded 8 messages from DB: ed533763-307b-4107-82fa-e6eb5fb394ba
+INFO:__main__:Starting multi-agent workflow...
+INFO:agents.base_agent:[OrchestratorAgent] Processing query: registered mobile number
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:agents.base_agent:[OrchestratorAgent] Routing decision: {'intent': 'faq_agent', 'requires_api': False, 'next_agent': 'faq_agent', 'reasoning': 'The user is asking for information about their registered mobile number, which does not require live data and falls under general inquiries.', 'workflow_state': 'completion', 'pending_intent': None}
+INFO:graph.workflow:Routing to: faq_agent
+INFO:agents.base_agent:[FAQAgent] Processing FAQ query: registered mobile number (Intent: faq_agent)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:agents.base_agent:[FAQAgent] Rewritten: What is the registered mobile number associated with my account?
+INFO:httpx:HTTP Request: POST http://localhost:8245/ask "HTTP/1.1 200 OK"
+INFO:agents.base_agent:[FAQAgent] [DEBUG] RAG raw response: {'answer': 'I do not have that information for this room. Please contact support.', 'source_location': 'ehsaas', 'needs_followup': False, 'canonical_question': 'What is the registered mobile number associated with my account?', 'conversation_history': [{'role': 'user', 'content': 'What is the registered mobile number associated with my account?', 'timestamp': '2026-06-19T13:06:26.279142'}, {'role': 'assistant', 'content': 'I do not have that information for this room. Please contact support.', 'timestamp': '2026-06-19T13:06:26.279205'}], 'performance': {'response_time': 2.82}}
+INFO:agents.base_agent:[FAQAgent] Final Response: I do not have that information for this room. Plea...
+INFO:__main__:Persisting session: ed533763-307b-4107-82fa-e6eb5fb394ba | user=Haloocom1 | room=Ehsaas | local_storage=YES | refresh_token=NO
+INFO:services.database_service:💾 save_session OK | session=ed533763-307b-4107-82fa-e6eb5fb394ba | user=Haloocom1 | email=admin@haloocom.com | room=Ehsaas | local_storage=YES | chat_msgs=10
+INFO:__main__:Session persisted - 10 messages: ed533763-307b-4107-82fa-e6eb5fb394ba
+INFO:__main__:Workflow complete | Intent: faq_agent | Agent: faq_agent
+INFO:__main__:Streaming 5 chunks...
+INFO:__main__:Generating ElevenLabs TTS for: I do not have that information for this room. Plea...
+INFO:__main__:Audio sent successfully
+INFO:__main__:================================================================================
+
+INFO:__main__:Message keys: ['type', 'payload', 'access_token', 'source', 'isVoiceInput']
+INFO:__main__:[WS] local_storage_info built from JWT fallback | user: admin@haloocom.com
+INFO:__main__:
+WebSocket Message | Session: ed533763-307b-4107-82fa-e6eb5fb394ba | User: admin@haloocom.com (Haloocom1)
+INFO:__main__:   Query: how to register update my registered mobile number...
+INFO:__main__:Loaded 10 messages from DB: ed533763-307b-4107-82fa-e6eb5fb394ba
+INFO:__main__:Starting multi-agent workflow...
+INFO:agents.base_agent:[OrchestratorAgent] Processing query: how to register update my registered mobile number
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:agents.base_agent:[OrchestratorAgent] Routing decision: {'intent': 'bank_faq_general', 'requires_api': False, 'next_agent': 'faq_agent', 'reasoning': 'The user is asking for information on how to update their registered mobile number, which is a general inquiry and does not require live data.', 'workflow_state': 'initial', 'pending_intent': None}
+INFO:graph.workflow:Routing to: faq_agent
+INFO:agents.base_agent:[FAQAgent] Processing FAQ query: how to register update my registered mobile number (Intent: bank_faq_general)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:agents.base_agent:[FAQAgent] Rewritten: How can I register or update my mobile number for my account?
+INFO:httpx:HTTP Request: POST http://localhost:8245/ask-abc "HTTP/1.1 200 OK"
+INFO:agents.base_agent:[FAQAgent] [DEBUG] RAG raw response: {'answer': 'You can update your registered mobile number by visiting your home branch with a valid identity proof. If digital update services are available, you may also use those channels.', 'source_location': 'abc_bank_faqs', 'performance': {'response_time': 0.39}, 'raw_results': ['Question: How do I update my registered mobile number?\nAnswer: You can update your registered mobile number by visiting your home branch with a valid identity proof. If digital update services are available, you may also use those channels.', 'Question: How do I update my email address?\nAnswer: You can update your email address through Internet Banking, Mobile Banking, or by submitting a request at your branch.', 'Question: How can I apply for a cheque book?\nAnswer: You can request a cheque book through Mobile Banking, Internet Banking, Customer Care, or by visiting a branch. Once processed, it will be delivered to your registered address.']}
+INFO:agents.base_agent:[FAQAgent] Final Response: You can update your registered mobile number by vi...
+INFO:__main__:Persisting session: ed533763-307b-4107-82fa-e6eb5fb394ba | user=Haloocom1 | room=Ehsaas | local_storage=YES | refresh_token=NO
+INFO:services.database_service:💾 save_session OK | session=ed533763-307b-4107-82fa-e6eb5fb394ba | user=Haloocom1 | email=admin@haloocom.com | room=Ehsaas | local_storage=YES | chat_msgs=12
+INFO:__main__:Session persisted - 12 messages: ed533763-307b-4107-82fa-e6eb5fb394ba
+INFO:__main__:Workflow complete | Intent: bank_faq_general | Agent: faq_agent
+INFO:__main__:Streaming 14 chunks...
+INFO:__main__:Generating ElevenLabs TTS for: You can update your registered mobile number by vi...
+INFO:__main__:Audio sent successfully
+INFO:__main__:================================================================================
+
+INFO:__main__:Message keys: ['type', 'payload', 'access_token', 'source', 'isVoiceInput']
+INFO:__main__:[WS] local_storage_info built from JWT fallback | user: admin@haloocom.com
+INFO:__main__:
+WebSocket Message | Session: ed533763-307b-4107-82fa-e6eb5fb394ba | User: admin@haloocom.com (Haloocom1)
+INFO:__main__:   Query: how to check my account balance...
+INFO:__main__:Loaded 12 messages from DB: ed533763-307b-4107-82fa-e6eb5fb394ba
+INFO:__main__:Starting multi-agent workflow...
+INFO:agents.base_agent:[OrchestratorAgent] Processing query: how to check my account balance
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:agents.base_agent:[OrchestratorAgent] Routing decision: {'intent': 'bank_faq_balance_check', 'requires_api': False, 'next_agent': 'faq_agent', 'reasoning': 'The user is asking for information on how to check their account balance, which does not require live data and falls under general banking FAQs.', 'workflow_state': 'initial', 'pending_intent': None}
+INFO:graph.workflow:Routing to: faq_agent
+INFO:agents.base_agent:[FAQAgent] Processing FAQ query: how to check my account balance (Intent: bank_faq_balance_check)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:agents.base_agent:[FAQAgent] Rewritten: How can I check my account balance?
+INFO:httpx:HTTP Request: POST http://localhost:8245/ask-abc "HTTP/1.1 200 OK"
+INFO:agents.base_agent:[FAQAgent] [DEBUG] RAG raw response: {'answer': 'You can check your account balance through our Mobile Banking App, Internet Banking, an ATM, Missed Call Banking (if available), or by visiting your nearest branch. For security purposes, you will first need to verify your identity before any balance information is shared.', 'source_location': 'abc_bank_faqs', 'performance': {'response_time': 0.23}, 'raw_results': ['Question: How do I check my ABC Bank account balance?\nAnswer: You can check your account balance through our Mobile Banking App, Internet Banking, an ATM, Missed Call Banking (if available), or by visiting your nearest branch. For security purposes, you will first need to verify your identity before any balance information is shared.', "Question: How do I check my ABC Bank account balance?\nAnswer: You can check your balance instantly in a few ways: Log into the ABC Bank MobileBanking App or NetBanking. Give a missed call to 1800-270-3333 from your registered mobile number. Send an SMS saying 'BAL' to 5676712. Would you like guidance on registering for SMS banking?", 'Question: How can I get my account statement?\nAnswer: You can download your account statement through Internet Banking or Mobile Banking. Alternatively, you may visit your nearest branch and request a statement.']}
+INFO:agents.base_agent:[FAQAgent] Final Response: You can check your account balance through our Mob...
+INFO:__main__:Persisting session: ed533763-307b-4107-82fa-e6eb5fb394ba | user=Haloocom1 | room=Ehsaas | local_storage=YES | refresh_token=NO
+INFO:services.database_service:💾 save_session OK | session=ed533763-307b-4107-82fa-e6eb5fb394ba | user=Haloocom1 | email=admin@haloocom.com | room=Ehsaas | local_storage=YES | chat_msgs=14
+INFO:__main__:Session persisted - 14 messages: ed533763-307b-4107-82fa-e6eb5fb394ba
+INFO:__main__:Workflow complete | Intent: bank_faq_balance_check | Agent: faq_agent
+INFO:__main__:Streaming 19 chunks...
+INFO:__main__:Generating ElevenLabs TTS for: You can check your account balance through our Mob...
+INFO:__main__:Audio sent successfully
+INFO:__main__:================================================================================
+
+INFO:__main__:Message keys: ['type', 'payload', 'access_token', 'source', 'isVoiceInput']
+INFO:__main__:[WS] local_storage_info built from JWT fallback | user: admin@haloocom.com
+INFO:__main__:
+WebSocket Message | Session: ed533763-307b-4107-82fa-e6eb5fb394ba | User: admin@haloocom.com (Haloocom1)
+INFO:__main__:   Query: how can I get my account statement...
+INFO:__main__:Loaded 14 messages from DB: ed533763-307b-4107-82fa-e6eb5fb394ba
+INFO:__main__:Starting multi-agent workflow...
+INFO:agents.base_agent:[OrchestratorAgent] Processing query: how can I get my account statement
+INFO:agents.base_agent:[OrchestratorAgent] Detected navigation intent via keyword matching
+INFO:graph.workflow:Routing to: api_agent
+INFO:agents.base_agent:[APIAgent] Processing API query: how can I get my account statement
+INFO:agents.base_agent:[APIAgent] 🔑 Injected into tools | user_id=Haloocom1 | user_email= | session_id=ed533763-307b-4107-82fa-e6eb5fb394ba
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:agents.base_agent:[APIAgent] Tools used: []
+INFO:agents.base_agent:[APIAgent] API Agent response: To get your account statement, you can follow these methods:
+
+1. **Mobile Banking App**: Log in to y...
+INFO:__main__:Persisting session: ed533763-307b-4107-82fa-e6eb5fb394ba | user=Haloocom1 | room=Ehsaas | local_storage=YES | refresh_token=NO
+INFO:services.database_service:💾 save_session OK | session=ed533763-307b-4107-82fa-e6eb5fb394ba | user=Haloocom1 | email=admin@haloocom.com | room=Ehsaas | local_storage=YES | chat_msgs=16
+INFO:__main__:Session persisted - 16 messages: ed533763-307b-4107-82fa-e6eb5fb394ba
+INFO:__main__:Workflow complete | Intent: navigation | Agent: api_agent
+INFO:__main__:Streaming 40 chunks...
+INFO:__main__:Generating ElevenLabs TTS for: To get your account statement, you can follow thes...
+INFO:__main__:Audio sent successfully
+INFO:__main__:================================================================================
+
+INFO:__main__:
+WebSocket Disconnected: ed533763-307b-4107-82fa-e6eb5fb394ba
+INFO:__main__:WebSocket unregistered for session: ed533763-307b-4107-82fa-e6eb5fb394ba
+INFO:     connection closed
+INFO:     13.232.11.112:38170 - "WebSocket /ws?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJIYWxvb2NvbTEiLCJlbWFpbCI6ImFkbWluQGhhbG9vY29tLmNvbSIsIm5hbWUiOiJBZG1pbiIsImRlcHQiOiJBSSIsInJvbGUiOiJBSSIsImZsb29yIjoiR3JvdW5kIEZsb29yIiwicm9vbSI6IkVoc2FhcyIsImlzcyI6ImhleGEtbG9jYWwiLCJhdWQiOiJoZXhhLWNsaWVudCIsInNlcnZpY2VzIjpbInZtcyIsImJhbmtpbmciLCJjaGF0Iiwidm9pY2UiLCJ3ZWJzb2NrZXQiXSwiZXhwIjoxNzg0NDQ1NDA0LCJpYXQiOjE3ODE4NTM0MDQsImp0aSI6IjgyZTU1OTdkLTAyM2ItNDVlZS1iODNmLTZiM2Q5ZDE5OWM1YSJ9.d-MgmPBvQwmjcUwn7G7bdypeVFfhcPR8kcLRcePqRNM" [accepted]
+INFO:__main__:WebSocket registered for session: d5939e75-2e29-49a2-b71e-ee650985d2b9
+INFO:__main__:
+================================================================================
+INFO:__main__:WebSocket Connected - Session: d5939e75-2e29-49a2-b71e-ee650985d2b9
+INFO:__main__:   Access token from URL: ***cLRcePqRNM
+INFO:__main__:================================================================================
+INFO:     connection open
+INFO:__main__:
+WebSocket Disconnected: b2e0baef-efaf-45cd-828a-6f58b6f00173
+INFO:__main__:WebSocket unregistered for session: b2e0baef-efaf-45cd-828a-6f58b6f00173
+INFO:     connection closed
+INFO:     13.232.11.112:52910 - "WebSocket /ws?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBMTAyMSIsImVtYWlsIjoiYW5rdXIuc3JpdmFzdGF2YUBoYWxvb2NvbS5jb20iLCJuYW1lIjoiQW5rdXIiLCJkZXB0IjoiRW5nZyIsInJvbGUiOiJNYW5hZ2VyIiwiZmxvb3IiOiJHcm91bmQgRmxvb3IiLCJyb29tIjoiRWhzYWFzIiwiaXNzIjoiaGV4YS1sb2NhbCIsImF1ZCI6ImhleGEtY2xpZW50Iiwic2VydmljZXMiOlsidm1zIiwiYmFua2luZyIsImNoYXQiLCJ2b2ljZSIsIndlYnNvY2tldCJdLCJleHAiOjE3ODQ0Mzk0MjYsImlhdCI6MTc4MTg0NzQyNiwianRpIjoiODQ0ZDUzZDktNGE2ZC00YTc5LTgyYWMtY2QzYWY3NTU2MzE3In0.oeRe6c1tyS1C2J9mskr5RsYXodH-9-Z2l2ldAkQnkW0" [accepted]
+INFO:__main__:WebSocket registered for session: f72762d1-14ab-4d30-87b6-b50bcd57d611
+INFO:__main__:
+================================================================================
+INFO:__main__:WebSocket Connected - Session: f72762d1-14ab-4d30-87b6-b50bcd57d611
+INFO:__main__:   Access token from URL: ***2ldAkQnkW0
+INFO:__main__:================================================================================
+INFO:     connection open
+INFO:__main__:
+WebSocket Disconnected: f72762d1-14ab-4d30-87b6-b50bcd57d611
+INFO:__main__:WebSocket unregistered for session: f72762d1-14ab-4d30-87b6-b50bcd57d611
+INFO:     connection closed
+INFO:     13.232.11.112:51700 - "WebSocket /ws?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBMTAyMSIsImVtYWlsIjoiYW5rdXIuc3JpdmFzdGF2YUBoYWxvb2NvbS5jb20iLCJuYW1lIjoiQW5rdXIiLCJkZXB0IjoiRW5nZyIsInJvbGUiOiJNYW5hZ2VyIiwiZmxvb3IiOiJHcm91bmQgRmxvb3IiLCJyb29tIjoiRWhzYWFzIiwiaXNzIjoiaGV4YS1sb2NhbCIsImF1ZCI6ImhleGEtY2xpZW50Iiwic2VydmljZXMiOlsidm1zIiwiYmFua2luZyIsImNoYXQiLCJ2b2ljZSIsIndlYnNvY2tldCJdLCJleHAiOjE3ODQ0Mzk0MjYsImlhdCI6MTc4MTg0NzQyNiwianRpIjoiODQ0ZDUzZDktNGE2ZC00YTc5LTgyYWMtY2QzYWY3NTU2MzE3In0.oeRe6c1tyS1C2J9mskr5RsYXodH-9-Z2l2ldAkQnkW0" [accepted]
+INFO:__main__:WebSocket registered for session: 63743476-03d4-427b-89cc-8d1c285d7c67
+INFO:__main__:
+================================================================================
+INFO:__main__:WebSocket Connected - Session: 63743476-03d4-427b-89cc-8d1c285d7c67
+INFO:__main__:   Access token from URL: ***2ldAkQnkW0
+INFO:__main__:================================================================================
+INFO:     connection open
+INFO:__main__:
+WebSocket Disconnected: 63743476-03d4-427b-89cc-8d1c285d7c67
+INFO:__main__:WebSocket unregistered for session: 63743476-03d4-427b-89cc-8d1c285d7c67
+INFO:     connection closed

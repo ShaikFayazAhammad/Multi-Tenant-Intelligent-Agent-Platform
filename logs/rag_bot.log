@@ -1,0 +1,32 @@
+/home/HEXA/haloocom_chatbot_voicebot/backend/efs-rag-bot/api.py:283: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [647639]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8245 (Press CTRL+C to quit)
+8245
+Starting on port 8245
+EFS RAG API Started with ABC Bank support
+INFO:     127.0.0.1:52594 - "POST /ask-abc HTTP/1.1" 200 OK
+
+============================================================
+🔄 Processing: 'What is the registered mobile number associated with my account?'
+🏢 Room: ehsaas
+💬 History: 8 messages
+============================================================
+Intent: GENERAL_FAQ
+Checking completeness: 'What is the registered mobile number associated with my account?'
+[OK] Complete (general facility question - no device needed)
+LLM Mapped: 'What is the registered mobile number associated with my account?' -> 'What is the registered mobile number associated with my account?'
+Query: What is the registered mobile number associated with my account?
+Retrieving for: 'what is the registered mobile number associated with my account?' in room: 'ehsaas'
+[OK] Found 4 high-quality docs (Room: ehsaas + General)
+✅ Answer ready
+INFO:     127.0.0.1:45310 - "POST /ask HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60482 - "POST /ask-abc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34346 - "POST /ask-abc HTTP/1.1" 200 OK

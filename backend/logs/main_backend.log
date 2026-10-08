@@ -1,0 +1,71 @@
+INFO:agents.base_agent:[OrchestratorAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[OrchestratorAgent] SSL Verification disabled for OpenAI
+INFO:agents.base_agent:[OrchestratorAgent] OpenAI Client initialized successfully for OrchestratorAgent
+INFO:agents.base_agent:[APIAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[APIAgent] SSL Verification disabled for OpenAI
+INFO:agents.base_agent:[APIAgent] OpenAI Client initialized successfully for APIAgent
+INFO:agents.base_agent:[FAQAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[FAQAgent] SSL Verification disabled for OpenAI
+INFO:agents.base_agent:[FAQAgent] OpenAI Client initialized successfully for FAQAgent
+INFO:auth_router:Fallback user creation ID: 1975d009-4647-4ffe-85e9-914c556d4148 (reason: DB unavailable)
+INFO:agents.base_agent:[OrchestratorAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[OrchestratorAgent] SSL Verification disabled for OpenAI
+INFO:agents.base_agent:[OrchestratorAgent] OpenAI Client initialized successfully for OrchestratorAgent
+INFO:agents.base_agent:[APIAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[APIAgent] SSL Verification disabled for OpenAI
+INFO:agents.base_agent:[APIAgent] OpenAI Client initialized successfully for APIAgent
+INFO:agents.base_agent:[FAQAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[FAQAgent] SSL Verification disabled for OpenAI
+INFO:agents.base_agent:[FAQAgent] OpenAI Client initialized successfully for FAQAgent
+INFO:agents.base_agent:[OrchestratorAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[OrchestratorAgent] SSL Verification disabled for OpenAI
+INFO:agents.base_agent:[OrchestratorAgent] OpenAI Client initialized successfully for OrchestratorAgent
+INFO:agents.base_agent:[APIAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[APIAgent] SSL Verification disabled for OpenAI
+INFO:agents.base_agent:[APIAgent] OpenAI Client initialized successfully for APIAgent
+INFO:agents.base_agent:[FAQAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[FAQAgent] SSL Verification disabled for OpenAI
+INFO:agents.base_agent:[FAQAgent] OpenAI Client initialized successfully for FAQAgent
+INFO:agents.base_agent:[OrchestratorAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[OrchestratorAgent] SSL Verification disabled for OpenAI
+INFO:agents.base_agent:[OrchestratorAgent] OpenAI Client initialized successfully for OrchestratorAgent
+INFO:agents.base_agent:[APIAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[APIAgent] SSL Verification disabled for OpenAI
+INFO:agents.base_agent:[APIAgent] OpenAI Client initialized successfully for APIAgent
+INFO:agents.base_agent:[FAQAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[FAQAgent] SSL Verification disabled for OpenAI
+INFO:agents.base_agent:[FAQAgent] OpenAI Client initialized successfully for FAQAgent
+INFO:agents.base_agent:[OrchestratorAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[OrchestratorAgent] SSL Verification disabled for OpenAI
+INFO:agents.base_agent:[OrchestratorAgent] OpenAI Client initialized successfully for OrchestratorAgent
+INFO:agents.base_agent:[APIAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[APIAgent] SSL Verification disabled for OpenAI
+INFO:agents.base_agent:[APIAgent] OpenAI Client initialized successfully for APIAgent
+INFO:agents.base_agent:[FAQAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[FAQAgent] SSL Verification disabled for OpenAI
+INFO:agents.base_agent:[FAQAgent] OpenAI Client initialized successfully for FAQAgent
+INFO:agents.base_agent:[OrchestratorAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[OrchestratorAgent] SSL Verification disabled for OpenAI
+INFO:agents.base_agent:[OrchestratorAgent] OpenAI Client initialized successfully for OrchestratorAgent
+INFO:agents.base_agent:[APIAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[APIAgent] SSL Verification disabled for OpenAI
+INFO:agents.base_agent:[APIAgent] OpenAI Client initialized successfully for APIAgent
+INFO:agents.base_agent:[FAQAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[FAQAgent] SSL Verification disabled for OpenAI
+INFO:agents.base_agent:[FAQAgent] OpenAI Client initialized successfully for FAQAgent
+INFO:agents.base_agent:[OrchestratorAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[OrchestratorAgent] SSL Verification disabled for OpenAI
+INFO:agents.base_agent:[OrchestratorAgent] OpenAI Client initialized successfully for OrchestratorAgent
+INFO:agents.base_agent:[APIAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[APIAgent] SSL Verification disabled for OpenAI
+INFO:agents.base_agent:[APIAgent] OpenAI Client initialized successfully for APIAgent
+INFO:agents.base_agent:[FAQAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[FAQAgent] SSL Verification disabled for OpenAI
+INFO:agents.base_agent:[FAQAgent] OpenAI Client initialized successfully for FAQAgent
+INFO:agents.base_agent:[OrchestratorAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[OrchestratorAgent] OpenAI Client initialized successfully for OrchestratorAgent
+INFO:agents.base_agent:[APIAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[APIAgent] OpenAI Client initialized successfully for APIAgent
+INFO:agents.base_agent:[FAQAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[FAQAgent] OpenAI Client initialized successfully for FAQAgent
+INFO:services.database_service:✅ User created | id=1 | email=testuser@example.com

@@ -1,0 +1,25 @@
+
+> hexa-assistant-ui@1.0.0 build
+> node ./node_modules/typescript/bin/tsc && vite build --mode staging
+
+[Vite Config] Mode: staging
+[Vite Config] Backend URL: https://vms2.0.haloocom.in/backend1
+[Vite Config] WebSocket URL: wss://chatbot.haloocom.in/ws
+vite v5.4.21 building for staging...
+transforming...
+Browserslist: browsers data (caniuse-lite) is 6 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 1570 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                             0.55 kB │ gzip:  0.33 kB
+dist/assets/index-Co81ekey.css             28.75 kB │ gzip:  5.60 kB
+dist/assets/BargeInContext-Dafx3-YJ.js      0.95 kB │ gzip:  0.52 kB │ map:   3.75 kB
+dist/assets/Signup-CIp2s05d.js              3.10 kB │ gzip:  1.08 kB │ map:   7.05 kB
+dist/assets/ui-vendor-B1witcHJ.js           4.01 kB │ gzip:  1.78 kB │ map:  15.49 kB
+dist/assets/TransportContext-BaGvBRdc.js    8.27 kB │ gzip:  3.06 kB │ map:  21.34 kB
+dist/assets/ChatPage-C16-iEyF.js           30.59 kB │ gzip:  9.77 kB │ map: 144.39 kB
+dist/assets/index-Br3LiW9j.js              84.33 kB │ gzip: 31.62 kB │ map: 630.12 kB
+dist/assets/react-vendor-F9Y4d3HK.js      140.93 kB │ gzip: 45.31 kB │ map: 344.43 kB
+✓ built in 2.17s

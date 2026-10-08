@@ -1,0 +1,14 @@
+MySQL connector not available; database service running in local fallback mode
+INFO:agents.base_agent:[OrchestratorAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[OrchestratorAgent] SSL Verification disabled for OpenAI
+INFO:agents.base_agent:[OrchestratorAgent] OpenAI Client initialized successfully for OrchestratorAgent
+INFO:agents.base_agent:[APIAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[APIAgent] SSL Verification disabled for OpenAI
+INFO:agents.base_agent:[APIAgent] OpenAI Client initialized successfully for APIAgent
+INFO:agents.base_agent:[FAQAgent] Initializing with model: gpt-4o-mini
+INFO:agents.base_agent:[FAQAgent] SSL Verification disabled for OpenAI
+INFO:agents.base_agent:[FAQAgent] OpenAI Client initialized successfully for FAQAgent
+INFO:     Started server process [21932]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8125 (Press CTRL+C to quit)

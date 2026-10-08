@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: bfsi_mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: bfsi_platform
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysqldata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: bfsi_chroma
+    ports:
+      - "8000:8000"
+    volumes:
+      - chromadata:/chroma/chroma
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: bfsi_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - MYSQL_SERVER=mysql
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=rootpassword
+      - MYSQL_DB=bfsi_platform
+      - MYSQL_PORT=3306
+      - DATABASE_URL=mysql+pymysql://root:rootpassword@mysql:3306/bfsi_platform
+      - JWT_SECRET=bfsi-prod-super-secret-jwt-key-2026
+      - ENCRYPTION_KEY=uN_4V6kZqX7zP_Y0qL9rT3vW8xM1nB5vC8xD7yZ4wE2=
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  admin-portal:
+    build:
+      context: ./frontend/admin-portal
+      dockerfile: Dockerfile
+    container_name: bfsi_admin_portal
+    ports:
+      - "3001:3001"
+    depends_on:
+      - backend
+
+  client-portal:
+    build:
+      context: ./frontend/client-portal
+      dockerfile: Dockerfile
+    container_name: bfsi_client_portal
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  mysqldata:
+  chromadata:

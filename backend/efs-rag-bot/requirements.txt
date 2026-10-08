@@ -1,0 +1,12 @@
+aiohttp==3.12.13
+aiomysql
+fastapi
+pydantic
+uvicorn
+langgraph
+langchain_core
+langchain_openai
+langchain_chroma
+websockets
+requests
+jwt

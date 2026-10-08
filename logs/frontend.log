@@ -1,0 +1,9 @@
+
+> hexa-assistant-ui@1.0.0 preview
+> vite preview --port 8248 --host 0.0.0.0
+
+[Vite Config] Mode: production
+[Vite Config] Backend URL: https://vms2.0.haloocom.in/backend1
+[Vite Config] WebSocket URL: wss://chatbot.haloocom.in/ws
+  ➜  Local:   http://localhost:8248/
+  ➜  Network: http://192.168.3.155:8248/

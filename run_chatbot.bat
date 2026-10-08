@@ -1,0 +1,9 @@
+@echo off
+echo Starting EFS VMS Chatbot...
+echo Ensuring dependencies...
+python -m pip install uvicorn fastapi langchain langgraph langchain_openai httpx python-dotenv
+
+echo Starting Server...
+cd backend/efs_vms_chatbot
+python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
+pause

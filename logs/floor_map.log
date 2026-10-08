@@ -1,0 +1,24 @@
+INFO:__main__:Mounted /images static files
+INFO:     Started server process [647631]
+INFO:     Waiting for application startup.
+INFO:__main__:================================================================================
+INFO:__main__:🚀 EFS Floor Navigation API Starting Up
+INFO:__main__:================================================================================
+INFO:__main__:📋 Registered routes:
+INFO:__main__:  GET /openapi.json
+INFO:__main__:  GET /docs
+INFO:__main__:  GET /docs/oauth2-redirect
+INFO:__main__:  GET /redoc
+INFO:__main__:  GET /
+INFO:__main__:  GET /test-floor-map
+INFO:__main__:  POST /api/navigate
+INFO:__main__:  GET /api/locations
+INFO:__main__:  GET /api/floors
+INFO:__main__:  GET /api/search
+INFO:__main__:  GET /all_floors.html
+INFO:__main__:  GET /floor/all_floors.html
+INFO:__main__:  GET /{filename:path}
+INFO:__main__:  GET /floor/{filename:path}
+INFO:__main__:================================================================================
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8244 (Press CTRL+C to quit)
