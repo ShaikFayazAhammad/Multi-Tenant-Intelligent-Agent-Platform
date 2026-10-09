@@ -16,7 +16,7 @@ api.interceptors.request.use((config) => {
 
 export const adminApi = {
   // Auth
-  login: async (email: string, password: str) => {
+  login: async (email: string, password: string) => {
     const res = await api.post('/auth/login', { email, password });
     return res.data;
   },
@@ -94,6 +94,11 @@ export const adminApi = {
     const res = await api.post(`/admin/projects/${projectId}/kb/upload`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
+    return res.data;
+  },
+  // Playground Test Chat
+  testPlaygroundChat: async (projectId: string, message: string) => {
+    const res = await api.post('/client/chat', { project_id: projectId, message });
     return res.data;
   },
 };

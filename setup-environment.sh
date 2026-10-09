@@ -126,43 +126,28 @@ echo "=================================================="
 echo "🐍 Step 3: Setting up Python environments..."
 echo "=================================================="
 
-BACKEND_SERVICES=("efs_vms_chatbot" "efs-rag-bot" "Floor_map")
+BACKEND_SERVICES=("app")
 
-for service in "${BACKEND_SERVICES[@]}"; do
-    echo ""
-    echo "🔧 Setting up: backend/$service"
-    cd "backend/$service"
-    
-    # Create virtual environment if it doesn't exist
-    if [ ! -d "venv" ]; then
-        echo "  📦 Creating virtual environment..."
-        python3 -m venv venv
-        echo "  ✅ Virtual environment created"
-    else
-        echo "  ℹ️  Virtual environment already exists"
-    fi
-    
-    # Activate and install dependencies
-    echo "  📥 Installing Python dependencies..."
-    source venv/bin/activate
-    
-    # Upgrade pip
-    pip install --upgrade pip > /dev/null 2>&1
-    
-    # Install dependencies
-    if [ -f "requirements.txt" ]; then
-        pip install -r requirements.txt
-        echo "  ✅ Dependencies installed from requirements.txt"
-    elif [ -f "requirements1.txt" ]; then
-        pip install -r requirements1.txt
-        echo "  ✅ Dependencies installed from requirements1.txt"
-    else
-        echo "  ⚠️  No requirements file found"
-    fi
-    
-    deactivate
-    cd ../..
-done
+echo ""
+echo "🔧 Setting up backend virtual environment..."
+cd backend
+
+if [ ! -d "venv" ]; then
+    echo "  📦 Creating virtual environment..."
+    python3 -m venv venv
+    echo "  ✅ Virtual environment created"
+else
+    echo "  ℹ️  Virtual environment already exists"
+fi
+
+source venv/bin/activate
+pip install --upgrade pip > /dev/null 2>&1
+if [ -f "requirements.txt" ]; then
+    pip install -r requirements.txt
+    echo "  ✅ Dependencies installed from requirements.txt"
+fi
+deactivate
+cd ..
 
 # Setup Frontend Dependencies
 echo ""

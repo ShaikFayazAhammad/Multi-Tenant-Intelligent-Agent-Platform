@@ -11,13 +11,19 @@ export default function App() {
   const [selectedOrgId, setSelectedOrgId] = useState<string>('');
   const [projects, setProjects] = useState<any[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'orgs' | 'projects' | 'config' | 'integrations' | 'kb'>('orgs');
+  const [activeTab, setActiveTab] = useState<'orgs' | 'projects' | 'config' | 'integrations' | 'kb' | 'playground'>('orgs');
 
   // Form states
   const [newOrgName, setNewOrgName] = useState('');
   const [newOrgSlug, setNewOrgSlug] = useState('');
   const [newProjName, setNewProjName] = useState('');
   const [newProjDomain, setNewProjDomain] = useState('banking');
+
+  // User Onboarding State
+  const [userEmail, setUserEmail] = useState('');
+  const [userPassword, setUserPassword] = useState('');
+  const [userFullName, setUserFullName] = useState('');
+  const [userRole, setUserRole] = useState('lead');
 
   // Config State
   const [configPrompt, setConfigPrompt] = useState('');
@@ -35,6 +41,11 @@ export default function App() {
   // KB State
   const [kbDocs, setKbDocs] = useState<any[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  // Agent Playground State
+  const [playgroundQuery, setPlaygroundQuery] = useState('');
+  const [playgroundLogs, setPlaygroundLogs] = useState<any[]>([]);
+  const [isPlaygroundTesting, setIsPlaygroundTesting] = useState(false);
 
   const [message, setMessage] = useState('');
 
@@ -90,6 +101,50 @@ export default function App() {
       setMessage('Organization created successfully');
     } catch (err: any) {
       setMessage(err.response?.data?.detail || 'Failed to create org');
+    }
+  };
+
+  const handleCreateOrgUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedOrgId) return;
+    try {
+      await adminApi.createOrgUser(selectedOrgId, {
+        email: userEmail,
+        password: userPassword,
+        full_name: userFullName,
+        role: userRole,
+      });
+      setUserEmail('');
+      setUserPassword('');
+      setUserFullName('');
+      setMessage(`Client user created successfully for Org (${userRole})!`);
+    } catch (err: any) {
+      setMessage(err.response?.data?.detail || 'Failed to create org user');
+    }
+  };
+
+  const handlePlaygroundSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProjectId || !playgroundQuery.trim()) return;
+    setIsPlaygroundTesting(true);
+    try {
+      const res = await adminApi.testPlaygroundChat(selectedProjectId, playgroundQuery);
+      setPlaygroundLogs((prev) => [
+        ...prev,
+        { role: 'user', content: playgroundQuery },
+        {
+          role: 'assistant',
+          content: res.answer,
+          intent: res.intent,
+          should_escalate: res.should_escalate,
+          latency_ms: res.latency_ms,
+        },
+      ]);
+      setPlaygroundQuery('');
+    } catch (err: any) {
+      setMessage('Playground test execution failed');
+    } finally {
+      setIsPlaygroundTesting(false);
     }
   };
 
@@ -254,29 +309,46 @@ export default function App() {
 
         {/* Nav Tabs */}
         <div className="flex space-x-2 border-b border-gray-800">
-          {(['orgs', 'projects', 'config', 'integrations', 'kb'] as const).map((tab) => (
+          {(['orgs', 'projects', 'config', 'integrations', 'kb', 'playground'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-2 text-sm font-medium border-b-2 transition ${activeTab === tab ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400 hover:text-gray-200'}`}
             >
-              {tab === 'orgs' && 'Organizations'}
+              {tab === 'orgs' && 'Organizations & Client Onboarding'}
               {tab === 'projects' && 'Projects & BFSI Templates'}
               {tab === 'config' && 'Prompt & Guardrails'}
               {tab === 'integrations' && 'API Integrations & Vault'}
               {tab === 'kb' && 'Knowledge Base (RAG)'}
+              {tab === 'playground' && '🎮 Agent Playground'}
             </button>
           ))}
         </div>
 
-        {/* TAB 1: ORGANIZATIONS */}
+        {/* TAB 1: ORGANIZATIONS & CLIENT ONBOARDING */}
         {activeTab === 'orgs' && (
-          <div className="space-y-6">
-            <form onSubmit={handleCreateOrg} className="bg-gray-900 border border-gray-800 p-6 rounded-xl space-y-4 max-w-lg">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form onSubmit={handleCreateOrg} className="bg-gray-900 border border-gray-800 p-6 rounded-xl space-y-4">
               <h3 className="text-lg font-bold text-blue-400">Create New Organization</h3>
               <input type="text" placeholder="Org Name (e.g. Acme Bank)" value={newOrgName} onChange={(e) => setNewOrgName(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-sm text-white" />
               <input type="text" placeholder="Org Slug (e.g. acme-bank)" value={newOrgSlug} onChange={(e) => setNewOrgSlug(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-sm text-white" />
               <button type="submit" className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded text-sm font-semibold">Create Org</button>
+            </form>
+
+            <form onSubmit={handleCreateOrgUser} className="bg-gray-900 border border-gray-800 p-6 rounded-xl space-y-4">
+              <h3 className="text-lg font-bold text-green-400">Onboard Client User for Active Org</h3>
+              <input type="email" placeholder="Client User Email" value={userEmail} onChange={(e) => setUserEmail(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-sm text-white" required />
+              <input type="password" placeholder="Temporary Password" value={userPassword} onChange={(e) => setUserPassword(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-sm text-white" required />
+              <input type="text" placeholder="Full Name" value={userFullName} onChange={(e) => setUserFullName(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-sm text-white" required />
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">User Access Role</label>
+                <select value={userRole} onChange={(e) => setUserRole(e.target.value)} className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-sm text-white">
+                  <option value="lead">Lead Agent / Operator (Assigned projects only)</option>
+                  <option value="supervisor">Supervisor / Org Admin (All Org projects & analytics)</option>
+                  <option value="org_admin">Organization Administrator</option>
+                </select>
+              </div>
+              <button type="submit" className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded text-sm font-semibold">Create Client User Credentials</button>
             </form>
           </div>
         )}
@@ -365,6 +437,58 @@ export default function App() {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* TAB 6: AGENT PLAYGROUND */}
+        {activeTab === 'playground' && (
+          <div className="bg-gray-900 border border-gray-800 p-6 rounded-xl space-y-6 max-w-4xl">
+            <div className="flex items-center justify-between border-b border-gray-800 pb-4">
+              <div>
+                <h3 className="text-lg font-bold text-blue-400">🎮 Interactive Agent Playground</h3>
+                <p className="text-xs text-gray-400">Test agent system prompt, guardrails, API tool execution, and vector RAG retrieval in real time.</p>
+              </div>
+              <button onClick={() => setPlaygroundLogs([])} className="text-xs bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded">Clear Simulator Chat</button>
+            </div>
+
+            {/* Chat Transcript Window */}
+            <div className="bg-gray-950 border border-gray-800 rounded-xl p-4 h-96 overflow-y-auto space-y-3 font-mono text-sm">
+              {playgroundLogs.length === 0 ? (
+                <div className="text-center text-gray-600 py-16 text-xs">Enter a query below to test the dynamic orchestrator graph for the active project.</div>
+              ) : (
+                playgroundLogs.map((log, idx) => (
+                  <div key={idx} className={`p-3 rounded-lg ${log.role === 'user' ? 'bg-blue-950/60 border border-blue-900 text-blue-100 ml-12' : 'bg-gray-900 border border-gray-800 text-gray-100 mr-12'}`}>
+                    <div className="text-xs text-gray-500 font-sans mb-1">{log.role === 'user' ? '👤 Admin Test Query' : '🤖 Agent Response'}</div>
+                    <div className="whitespace-pre-wrap">{log.content}</div>
+                    {log.intent && (
+                      <div className="mt-2 pt-2 border-t border-gray-800 text-xs text-gray-400 flex items-center justify-between font-sans">
+                        <span>Intent: <strong className="text-blue-400">{log.intent}</strong></span>
+                        <span>Escalate: <strong className={log.should_escalate ? 'text-red-400' : 'text-green-400'}>{log.should_escalate ? 'Yes' : 'No'}</strong></span>
+                        <span>Latency: <strong>{log.latency_ms}ms</strong></span>
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Query Form */}
+            <form onSubmit={handlePlaygroundSend} className="flex gap-3">
+              <input
+                type="text"
+                placeholder="Enter test user prompt (e.g. What is account balance requirement? or Blocked topic test)"
+                value={playgroundQuery}
+                onChange={(e) => setPlaygroundQuery(e.target.value)}
+                className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+              />
+              <button
+                type="submit"
+                disabled={isPlaygroundTesting}
+                className="bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 text-white font-semibold px-6 py-2 rounded-lg text-sm"
+              >
+                {isPlaygroundTesting ? 'Testing...' : 'Test Run'}
+              </button>
+            </form>
           </div>
         )}
       </div>

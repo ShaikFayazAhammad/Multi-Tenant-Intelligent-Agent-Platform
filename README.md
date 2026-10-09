@@ -124,55 +124,58 @@ Backend settings can be configured via environment variables or inside `backend/
 
 ---
 
-## 🚀 Installation & Local Execution
+## 🚀 Quick Startup & Local Execution
 
-### 1. Backend API Server Setup
+### 1. Automated One-Command Setup & Launch
 ```bash
-# Navigate to backend directory
+# 1. Install dependencies across backend & frontend portals
+./setup-environment.sh
+
+# 2. Launch FastAPI Backend (Port 8000), Admin Portal (Port 3000), and Client Portal (Port 3001)
+./start-all-dev.sh
+```
+
+### 2. Manual Startup
+
+#### Backend API Server (Port 8000)
+```bash
 cd backend
-
-# Create & activate Python virtual environment
-python -m venv venv
-# On Windows:
-venv\Scripts\activate
-# On Linux/macOS:
 source venv/bin/activate
-
-# Install Python requirements
-pip install -r requirements.txt
-
-# Start backend server
 python main.py
 ```
 *Backend will be online at `http://localhost:8000` (Swagger docs at `http://localhost:8000/docs`).*
 
----
-
-### 2. Super Admin Portal Setup
+#### Super Admin Portal (Port 3000)
 ```bash
 cd frontend/admin-portal
-
-# Install frontend dependencies
-npm install
-
-# Start development server
-cmd /c npm run dev
+npm run dev -- --port 3000
 ```
-*Super Admin Portal will be online at `http://localhost:3001`.*
+*Super Admin Portal will be online at `http://localhost:3000`.*
+
+#### Client Operations Portal (Port 3001)
+```bash
+cd frontend/client-portal
+npm run dev -- --port 3001
+```
+*Client Operations Portal will be online at `http://localhost:3001`.*
 
 ---
 
-### 3. Client Operations Portal Setup
+## 🗄️ Database UI Inspection
+
+### Web-Based Browser UI (Datasette)
+Launch an instant web interface at `http://localhost:8005` to browse tables (`orgs`, `users`, `projects`, `conversations`, `api_integrations`), filter rows, and run SQL queries:
 ```bash
-cd frontend/client-portal
-
-# Install frontend dependencies
-npm install
-
-# Start development server
-cmd /c npm run dev
+cd backend
+./venv/bin/pip install datasette
+./venv/bin/datasette bfsi_platform_test.db --port 8005
 ```
-*Client Operations Portal will be online at `http://localhost:3000`.*
+
+### Desktop GUI Applications
+Open the persistent SQLite database file:
+- **Database File Location**: `backend/bfsi_platform_test.db`
+- **Recommended Tools**: **DB Browser for SQLite** (`brew install --cask db-browser-for-sqlite`), **TablePlus**, or **DBeaver**.
+
 
 ---
 
