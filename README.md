@@ -189,35 +189,122 @@ Open the persistent SQLite database file:
 
 ---
 
-## 📡 API Endpoints Reference
+## 📡 Comprehensive API Documentation
 
-### Authentication (`/api/auth`)
-- `POST /api/auth/signup` - Register a new user under an organization.
-- `POST /api/auth/login` - Authenticate user credentials and return signed JWT.
-- `GET /api/auth/me` - Fetch profile of currently authenticated user.
+Interactive OpenAPI / Swagger documentation is automatically generated and accessible when the backend server is running:
+- **Interactive Swagger UI**: `http://localhost:8000/docs`
+- **ReDoc UI**: `http://localhost:8000/redoc`
+- **OpenAPI Schema Spec**: `http://localhost:8000/openapi.json`
 
-### Super Admin API (`/api/admin`)
-- `GET /api/admin/organizations` - List all tenant organizations.
-- `POST /api/admin/organizations` - Create a new organization.
-- `GET /api/admin/templates` - Retrieve default BFSI domain templates (**Banking**, **Finance**, **Insurance**).
-- `GET /api/admin/projects` - List projects.
-- `POST /api/admin/projects` - Create a new project initialized with a domain template.
-- `GET /api/admin/projects/{project_id}/config` - Fetch project configuration.
-- `PUT /api/admin/projects/{project_id}/config` - Update prompts, guardrails, and model settings.
-- `POST /api/admin/projects/{project_id}/integrations` - Create external API integration with encrypted secrets.
-- `POST /api/admin/integrations/{integration_id}/test-call` - Execute live test request to external API.
+---
 
-### Client Operations API (`/api/client`)
-- `GET /api/client/conversations` - Retrieve conversation sessions for the active organization.
-- `GET /api/client/conversations/{session_id}/transcript` - Fetch full turn-by-turn message transcript.
-- `POST /api/client/chat` - Send a REST message to the AI agent.
+### 1. Authentication Endpoints (`/api/auth`)
 
-### Analytics API (`/api/analytics`)
-- `GET /api/analytics/dashboard` - Aggregated metrics (total sessions, token usage, active agents, satisfaction score).
-- `GET /api/analytics/audit-logs` - Retrieve immutable security audit trails.
+#### `POST /api/auth/login`
+Authenticates user credentials and returns a signed JWT access token.
+- **Request Body**:
+  ```json
+  {
+    "email": "admin@bfsi.com",
+    "password": "admin123"
+  }
+  ```
+- **Response (`200 OK`)**:
+  ```json
+  {
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "token_type": "bearer",
+    "user": {
+      "id": "33333333-3333-3333-3333-333333333333",
+      "email": "admin@bfsi.com",
+      "full_name": "Platform Super Admin",
+      "role": "super_admin",
+      "org_id": null,
+      "is_active": true
+    }
+  }
+  ```
 
-### WebSocket Interface (`/ws`)
-- `WS /ws/chat/{session_id}` - Real-time full-duplex chat stream with LangGraph agent.
+#### `POST /api/auth/signup`
+Registers a new user under an active organization.
+- **Request Body**:
+  ```json
+  {
+    "email": "advisor@bank.com",
+    "password": "SecurePassword123!",
+    "full_name": "Jane Advisor",
+    "org_id": "11111111-1111-1111-1111-111111111111",
+    "role": "lead"
+  }
+  ```
+
+#### `GET /api/auth/me`
+Retrieves the profile of the currently authenticated user based on `Authorization: Bearer <token>`.
+
+---
+
+### 2. Super Admin Endpoints (`/api/admin`)
+*Requires `Authorization: Bearer <token>` with `super_admin` role.*
+
+- `GET /api/admin/organizations` - List all registered organizations.
+- `POST /api/admin/organizations` - Onboard a new tenant organization.
+- `GET /api/admin/templates` - Fetch domain system prompts and guardrails (**banking**, **finance**, **insurance**).
+- `GET /api/admin/projects` - List all projects under active organization.
+- `POST /api/admin/projects` - Create a project initialized with a domain template.
+- `GET /api/admin/projects/{project_id}/config` - Fetch current project prompt, model parameters, and guardrail settings.
+- `PUT /api/admin/projects/{project_id}/config` - Update project configuration.
+- `POST /api/admin/projects/{project_id}/integrations` - Register an external REST API integration (secrets stored with Fernet encryption).
+- `POST /api/admin/integrations/{integration_id}/test-call` - Trigger live test call to external integration.
+
+---
+
+### 3. Client Operations & Messaging Endpoints (`/api/client`)
+*Requires `Authorization: Bearer <token>`.*
+
+- `GET /api/client/conversations` - Retrieve conversation sessions for active project.
+- `GET /api/client/conversations/{session_id}/transcript` - Fetch turn-by-turn message transcript.
+- `POST /api/client/chat` - Send a message to the dynamic LangGraph agent.
+  - **Request Body**:
+    ```json
+    {
+      "project_id": "22222222-2222-2222-2222-222222222222",
+      "session_id": "session-101",
+      "message": "What is the status of my loan application #LN-9942?"
+    }
+    ```
+  - **Response (`200 OK`)**:
+    ```json
+    {
+      "session_id": "session-101",
+      "response": "Your loan application #LN-9942 is currently approved and pending final disbursement. [Disclaimer: Financial information provided for informational purposes.]",
+      "intent": "loan_status_query",
+      "escalation_required": false,
+      "pii_masked": true
+    }
+    ```
+
+---
+
+### 4. Operational Analytics & Audit Logs (`/api/analytics`)
+
+- `GET /api/analytics/dashboard` - Fetch aggregate metrics:
+  ```json
+  {
+    "total_sessions": 142,
+    "active_agents": 3,
+    "avg_satisfaction_score": 4.8,
+    "channel_breakdown": { "chat": 88, "voice": 54 },
+    "escalation_rate": 0.04
+  }
+  ```
+- `GET /api/analytics/audit-logs` - Retrieve security audit trail log entries.
+
+---
+
+### 5. Real-Time Streaming WebSocket (`/ws`)
+
+- `WS /ws/chat/{session_id}?token=<jwt_token>` - Full-duplex WebSocket stream for real-time assistant responses and token streaming.
+
 
 ---
 
