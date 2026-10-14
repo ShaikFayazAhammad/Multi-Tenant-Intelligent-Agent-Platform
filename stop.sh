@@ -14,6 +14,7 @@ echo "Stopping Python services..."
 pkill -f "python.*mock_api_server.py" 2>/dev/null && echo "✅ Mock API Server stopped" || echo "⚠️  Mock API Server not running"
 pkill -f "python.*main.py" 2>/dev/null && echo "✅ Main/Floor Map Backend stopped" || echo "⚠️  Main/Floor Map Backend not running"
 pkill -f "python.*api.py" 2>/dev/null && echo "✅ RAG Bot stopped" || echo "⚠️  RAG Bot not running"
+pkill -f "datasette" 2>/dev/null && echo "✅ Database UI stopped" || echo "⚠️  Database UI not running"
 
 echo "Stopping Node/Vite services..."
 pkill -f "vite" 2>/dev/null && echo "✅ Vite Frontend stopped" || echo "⚠️  Vite Frontend not running"
@@ -21,7 +22,7 @@ pkill -f "vite" 2>/dev/null && echo "✅ Vite Frontend stopped" || echo "⚠️ 
 # Also kill by port to be absolutely sure
 echo ""
 echo "Double-checking ports..."
-PORTS=(8000 8002 8003 5000 3000 8144 8145 8146 8147 8148)
+PORTS=(8000 8002 8003 8005 5000 3000 3001 3002 8144 8145 8146 8147 8148)
 
 for port in "${PORTS[@]}"; do
     PID=$(lsof -ti:$port 2>/dev/null)

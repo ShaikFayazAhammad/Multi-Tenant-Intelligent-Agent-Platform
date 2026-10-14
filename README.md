@@ -72,19 +72,19 @@ User Query → Input Guardrail (PII mask, topic block)
 ## 🏗️ Architecture Diagram
 
 ```
-┌──────────────────────────────────────────────────────────────────────┐
-│                        FRONTEND (React + Vite + TS)                  │
-│  ┌──────────────────────┐     ┌───────────────────────────────┐      │
-│  │ Super Admin Portal   │     │ Client Operations Portal      │      │
-│  │ (Port 3001)          │     │ (Port 3000)                   │      │
-│  │ • Org Management     │     │ • WebSocket Real-Time Chat    │      │
-│  │ • User CRUD          │     │ • HTTP Chat Fallback          │      │
-│  │ • Project Config     │     │ • Conversation History        │      │
-│  │ • KB Upload/Crawl    │     │ • Analytics Dashboard         │      │
-│  │ • Integration Vault  │     │ • Voice Input (STT) + TTS     │      │
-│  │ • Agent Playground   │     │ • Role: Supervisor / Lead     │      │
-│  └──────────┬───────────┘     └──────────────┬────────────────┘      │
-└─────────────┼────────────────────────────────┼───────────────────────┘
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                               FRONTEND (React + Vite + TS)                             │
+│  ┌──────────────────────┐  ┌──────────────────────┐  ┌───────────────────────────────┐ │
+│  │ Flagship Landing     │  │ Super Admin Portal   │  │ Client Operations Portal      │ │
+│  │ (Port 3002)          │  │ (Port 3001)          │  │ (Port 3000)                   │ │
+│  │ • Dark/Light Mode    │  │ • Org Management     │  │ • WebSocket Real-Time Chat    │ │
+│  │ • 2 Video Demo Slots │  │ • User CRUD          │  │ • HTTP Chat Fallback          │ │
+│  │ • Direct Portal CTAs │  │ • Project Config     │  │ • Conversation History        │ │
+│  │ • Creator Profiles   │  │ • KB Upload/Crawl    │  │ • Analytics Dashboard         │ │
+│  │ • GitHub Repo Link   │  │ • Integration Vault  │  │ • Voice Input (STT) + TTS     │ │
+│  │ • BFSI SaaS Hero     │  │ • Agent Playground   │  │ • Role: Supervisor / Lead     │ │
+│  └──────────┬───────────┘  └──────────┬───────────┘  └──────────────┬────────────────┘ │
+└─────────────┼─────────────────────────┼─────────────────────────────┼──────────────────┘
               │ REST API + WebSocket           │
               ▼                                ▼
 ┌──────────────────────────────────────────────────────────────────────┐
@@ -615,6 +615,19 @@ Refer to [EC2_STAGING_DEPLOYMENT.md](EC2_STAGING_DEPLOYMENT.md) for detailed clo
 
 ---
 
+## 👥 Project Creators & System Architects
+
+The **BFSI Multi-Tenant Intelligent Agent Platform** is co-created and engineered by:
+
+| Creator | Role & Specialization | LinkedIn Profile |
+| :--- | :--- | :--- |
+| **Rakesh Rohan** | Co-Creator & System Architect<br><sub>Multi-tenant data isolation, AES-256 secret vault, real-time WebSockets & voice streaming</sub> | [linkedin.com/in/rakesh-rohan](https://www.linkedin.com/in/rakesh-rohan/) |
+| **Shaik Fayaz Ahammad** | Co-Creator & AI Lead<br><sub>LangGraph dynamic orchestrator, ChromaDB RAG pipelines & multi-model LLM failover</sub> | [linkedin.com/in/shaikfayazahammad](https://www.linkedin.com/in/shaikfayazahammad/) |
+
+- **GitHub Repository**: [ShaikFayazAhammad/Multi-Tenant-Intelligent-Agent-Platform](https://github.com/ShaikFayazAhammad/Multi-Tenant-Intelligent-Agent-Platform)
+
+---
+
 ## 📚 Additional Documentation
 
 | Document | Description |
@@ -631,3 +644,4 @@ Refer to [EC2_STAGING_DEPLOYMENT.md](EC2_STAGING_DEPLOYMENT.md) for detailed clo
 <p align="center">
   <sub>Built for BFSI enterprises · Config-driven · Multi-tenant isolated · Production-ready</sub>
 </p>
+

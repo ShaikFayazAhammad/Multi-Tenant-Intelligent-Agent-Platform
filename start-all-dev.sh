@@ -39,24 +39,37 @@ BACKEND_PID=$!
 
 sleep 2
 
-# 2. Frontend Admin Portal (Port 3000)
-echo "🎨 Starting Admin Portal (Port 3000)..."
-(cd frontend/admin-portal && npm run dev -- --port 3000) &
+# 2. Frontend Super Admin Portal (Port 3001)
+echo "🎨 Starting Admin Portal (Port 3001)..."
+(cd frontend/admin-portal && npm run dev) &
 ADMIN_PID=$!
 
-# 3. Frontend Client Portal (Port 3001)
-echo "🎨 Starting Client Portal (Port 3001)..."
-(cd frontend/client-portal && npm run dev -- --port 3001) &
+# 3. Frontend Client Portal (Port 3000)
+echo "🎨 Starting Client Portal (Port 3000)..."
+(cd frontend/client-portal && npm run dev) &
 CLIENT_PID=$!
+
+# 4. Frontend Landing Page (Port 3002)
+echo "🚀 Starting Landing Page (Port 3002)..."
+(cd frontend/landing-page && npm run dev) &
+LANDING_PID=$!
+
+# 5. Database Web Inspector (Port 8005)
+echo "🗄️ Starting Database View (Port 8005)..."
+(cd backend && ./venv/bin/datasette serve bfsi_platform_test.db --port 8005 --host 0.0.0.0) &
+DATASETTE_PID=$!
 
 echo ""
 echo "=================================================="
 echo "✅ All services started in development mode!"
 echo ""
 echo "📡 Services:"
-echo "   - Admin Portal:   http://localhost:3000"
-echo "   - Client Portal:  http://localhost:3001"
-echo "   - Main Backend:   http://localhost:8000"
-echo "   - WebSocket API:  ws://localhost:8000/ws/{project_id}"
+echo "   - Landing Page:     http://localhost:3002"
+echo "   - Admin Portal:     http://localhost:3001"
+echo "   - Client Portal:    http://localhost:3000"
+echo "   - Main Backend:     http://localhost:8000"
+echo "   - Database Web UI:  http://localhost:8005"
+echo "   - WebSocket API:    ws://localhost:8000/ws/{project_id}"
 echo "=================================================="
+
 
