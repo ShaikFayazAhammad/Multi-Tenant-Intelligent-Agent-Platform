@@ -1,64 +1,145 @@
 # BFSI Multi-Tenant Intelligent Agent Platform (SaaS)
 
-A production-ready, multi-tenant SaaS platform engineered specifically for **BFSI (Banking, Financial Services, and Insurance)** enterprises. The platform features strict tenant data isolation, config-driven agent orchestration via LangGraph, isolated per-project RAG vector search, Fernet AES-256 encrypted external API tool execution, automated two-pass guardrails (PII masking & disclaimers), real-time WebSocket communication, ElevenLabs text-to-speech, and dual role-tailored web interfaces.
+<p align="center">
+  <strong>Production-Ready · Config-Driven · Multi-Tenant Isolated</strong>
+</p>
+
+A production-ready, multi-tenant SaaS platform engineered for **BFSI (Banking, Financial Services, and Insurance)** enterprises. It features strict tenant data isolation, config-driven agent orchestration via LangGraph, per-project RAG vector search (ChromaDB), OpenRouter multi-model LLM inference with automatic fallback, Fernet AES-256 encrypted API tool execution, automated two-pass guardrails (PII masking & disclaimers), real-time WebSocket streaming with token-chunked delivery, ElevenLabs text-to-speech, web crawler knowledge ingestion, an agent playground simulator, and dual role-tailored web interfaces.
 
 ---
 
 ## 📋 Table of Contents
+
 1. [Project Overview](#-project-overview)
 2. [Key Features](#-key-features)
-3. [Technology Stack](#-technology-stack)
-4. [Project & Directory Structure](#-project--directory-structure)
-5. [Prerequisites](#-prerequisites)
-6. [Environment Variables & Configuration](#-environment-variables--configuration)
-7. [Database Setup & Schema](#-database-setup--schema)
-8. [Installation & Local Execution](#-installation--local-execution)
-9. [API Endpoints Reference](#-api-endpoints-reference)
-10. [Database Schema Details](#-database-schema-details)
-11. [Testing Instructions](#-testing-instructions)
-12. [Build & Deployment Instructions](#-build--deployment-instructions)
-13. [Troubleshooting & Common Issues](#-troubleshooting--common-issues)
-14. [Important Notes & Assumptions](#-important-notes--assumptions)
+3. [Architecture Diagram](#-architecture-diagram)
+4. [Technology Stack](#-technology-stack)
+5. [Project & Directory Structure](#-project--directory-structure)
+6. [Prerequisites](#-prerequisites)
+7. [Environment Variables & Configuration](#-environment-variables--configuration)
+8. [Database Setup & Schema](#-database-setup--schema)
+9. [Installation & Quick Start](#-installation--quick-start)
+10. [Default Seed Credentials](#-default-seed-credentials)
+11. [API Endpoints Reference](#-api-endpoints-reference)
+12. [Database Schema Details](#-database-schema-details)
+13. [Testing Instructions](#-testing-instructions)
+14. [Build & Deployment](#-build--deployment)
+15. [Troubleshooting & Common Issues](#-troubleshooting--common-issues)
+16. [Important Notes & Assumptions](#-important-notes--assumptions)
 
 ---
 
 ## 🌟 Project Overview
 
-The BFSI Multi-Tenant Intelligent Agent Platform empowers financial organizations (Banks, Credit Unions, Insurance Brokers, Investment Firms) to deploy domain-specific conversational AI agents. Built with a config-driven architecture, administrators can define system prompts, domain guardrails, document knowledge bases, and external API tool definitions dynamically without re-deploying code.
+The BFSI Multi-Tenant Intelligent Agent Platform empowers financial organizations — banks, credit unions, insurance brokers, and investment firms — to deploy domain-specific conversational AI agents. Built with a fully config-driven architecture, administrators can define system prompts, domain guardrails, document knowledge bases (file upload & web crawling), external API tool definitions, and LLM model preferences dynamically — all without re-deploying code.
+
+### How It Works
+
+```
+User Query → Input Guardrail (PII mask, topic block)
+           → RAG Vector Search (ChromaDB, per-project isolated)
+           → Dynamic Tool Matching (encrypted API integrations)
+           → OpenRouter LLM Call (multi-model fallback chain)
+           → Output Guardrail (PII mask, disclaimers, escalation)
+           → Response Delivery (HTTP/WebSocket stream + optional TTS)
+```
 
 ---
 
 ## ✨ Key Features
 
-- **Multi-Tenant Data Isolation**: Every relational entity and vector database collection is strictly scoped by `org_id` and `project_id` via FastAPI dependency injection and JWT token claims.
-- **Config-Driven Dynamic Orchestrator**: LangGraph agent graphs are dynamically constructed at runtime per session using project configurations (system prompts, temperature, model selection, enabled tools, guardrails).
-- **External API Integrations Vault**: Secure REST API tool connector storing integration secrets with **Fernet AES-256 encryption**. Features live test-call execution capability directly from the Super Admin portal.
-- **Per-Project RAG Isolation**: Vector database collections (ChromaDB) are dynamically partitioned per project (`project_{project_id}`) to prevent cross-tenant knowledge leaks.
-- **Two-Pass Guardrail Engine**:
-  - **Pass 1 (Input Pre-check)**: Masks PII (Credit Cards, SSNs, Emails, Phone Numbers) and blocks prohibited topics (e.g., crypto gambling).
-  - **Pass 2 (Output Post-check)**: Sanitizes assistant outputs, appends mandatory financial disclaimers, and triggers escalation workflows on negative sentiment or compliance failures.
-- **Dual Role-Tailored Frontend Portals**:
-  - **Super Admin Portal (`http://localhost:3001`)**: Global tenant, user, project, domain template, integration, and guardrail management.
-  - **Client Operations Portal (`http://localhost:3000`)**: Role-scoped (Supervisor & Lead) dashboards, conversation history, real-time WebSocket chat, and ElevenLabs TTS audio playback.
-- **MySQL Engine Support**: Supports MySQL 8.0 / MariaDB with PyMySQL driver and automatic schema creation and seeding.
+| Feature | Description |
+| :--- | :--- |
+| **Multi-Tenant Data Isolation** | Every relational entity and vector collection is scoped by `org_id` and `project_id` via JWT claims and FastAPI dependency injection. |
+| **Config-Driven Dynamic Orchestrator** | LangGraph agent graphs are constructed at runtime per session using project configs (system prompts, temperature, model, enabled tools, guardrails). |
+| **OpenRouter Multi-Model LLM** | Uses OpenRouter's OpenAI-compatible API with automatic fallback chain: `gemini-2.0-flash-001` → `gemini-2.5-flash` → `llama-3.1-8b-instruct`. |
+| **Per-Project RAG Isolation** | ChromaDB vector collections partitioned per project (`proj_{project_id}`) with `all-MiniLM-L6-v2` embeddings. Prevents cross-tenant knowledge leaks. |
+| **Web Crawler Knowledge Ingestion** | Crawl any public webpage, extract clean text (BeautifulSoup), chunk, and auto-index into the project's isolated vector store. |
+| **Knowledge Base File Upload** | Upload `.txt`, `.md`, `.csv`, or similar text documents — automatically chunked and indexed into Chroma. |
+| **External API Integrations Vault** | Secure REST API tool connector with **Fernet AES-256 encryption** for secrets. Supports Bearer token & API key auth. Live test-call execution from Admin portal. |
+| **Two-Pass Guardrail Engine** | **Pass 1 (Input):** PII masking (credit cards, SSNs, emails, phone numbers), blocked topic detection. **Pass 2 (Output):** Output PII sanitization, mandatory disclaimer injection, negative-sentiment escalation triggers. |
+| **Agent Lifecycle Management** | Three-state lifecycle (`Live` / `Paused` / `Draft`). Only Live agents respond to client queries; Paused/Draft agents return a status notice. Playground bypasses lifecycle gates. |
+| **Agent Playground Simulator** | Full-stack simulation endpoint for admins: runs input guardrails → RAG → tool triggers → LLM → output guardrails with complete observability (latency, tokens, model, passages, flags). |
+| **Real-Time WebSocket Streaming** | Token-chunked message streaming over WebSocket with `MESSAGE_STREAM` / `MESSAGE_COMPLETE` protocol. Conversation persistence and analytics tracking built-in. |
+| **ElevenLabs Text-to-Speech** | Voice input triggers TTS audio generation via ElevenLabs API, base64-encoded and streamed back over WebSocket (`AUDIO_STREAM`). |
+| **Speech-to-Text (Browser STT)** | Client portal integrates native `SpeechRecognition` Web API for voice input transcription. |
+| **Dual Role-Tailored Portals** | **Super Admin Portal** (Port `3001`): tenant, user, project, template, integration, KB, and guardrail management. **Client Operations Portal** (Port `3000`): role-scoped dashboards, real-time chat, conversation history, analytics. |
+| **Operational Analytics Dashboard** | Real-time metrics: total conversations, chat vs. voice breakdown, resolution rate, escalated count, top intents, avg response latency, failed API calls. |
+| **Immutable Audit Logs** | Security audit trail capturing all administrative events, scoped by organization. |
+
+---
+
+## 🏗️ Architecture Diagram
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                        FRONTEND (React + Vite + TS)                  │
+│  ┌──────────────────────┐     ┌───────────────────────────────┐      │
+│  │ Super Admin Portal   │     │ Client Operations Portal      │      │
+│  │ (Port 3001)          │     │ (Port 3000)                   │      │
+│  │ • Org Management     │     │ • WebSocket Real-Time Chat    │      │
+│  │ • User CRUD          │     │ • HTTP Chat Fallback          │      │
+│  │ • Project Config     │     │ • Conversation History        │      │
+│  │ • KB Upload/Crawl    │     │ • Analytics Dashboard         │      │
+│  │ • Integration Vault  │     │ • Voice Input (STT) + TTS     │      │
+│  │ • Agent Playground   │     │ • Role: Supervisor / Lead     │      │
+│  └──────────┬───────────┘     └──────────────┬────────────────┘      │
+└─────────────┼────────────────────────────────┼───────────────────────┘
+              │ REST API + WebSocket           │
+              ▼                                ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│                      BACKEND (FastAPI · Port 8000)                   │
+│                                                                      │
+│  ┌──────────────┐  ┌──────────────┐  ┌─────────────┐                │
+│  │ Auth Router   │  │ Admin Router  │  │Client Router│                │
+│  │ /api/auth     │  │ /api/admin    │  │/api/client  │                │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬──────┘                │
+│         │                 │                  │                        │
+│  ┌──────▼─────────────────▼──────────────────▼──────┐                │
+│  │          Dynamic Orchestrator (LangGraph)         │                │
+│  │  Input Guardrails → RAG Query → Tool Exec → LLM  │                │
+│  │              → Output Guardrails                  │                │
+│  └───────┬──────────────┬────────────────┬──────────┘                │
+│          │              │                │                            │
+│  ┌───────▼─────┐ ┌──────▼──────┐ ┌──────▼────────┐                  │
+│  │ ChromaDB    │ │ OpenRouter  │ │ ElevenLabs    │                  │
+│  │ Vector Store│ │ LLM API    │ │ TTS API       │                  │
+│  └─────────────┘ └─────────────┘ └───────────────┘                  │
+│                                                                      │
+│  ┌─────────────────────┐  ┌──────────────────────┐                  │
+│  │ MySQL 8.0 / SQLite  │  │ Web Crawler Service  │                  │
+│  │ (SQLAlchemy 2.0)    │  │ (httpx + BS4)        │                  │
+│  └─────────────────────┘  └──────────────────────┘                  │
+└──────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
 ## 💻 Technology Stack
 
 ### Backend
-- **Framework**: Python 3.10+ / FastAPI
-- **ORM & Database**: SQLAlchemy 2.0, PyMySQL, MySQL 8.0 (with SQLite fallback for local test suites)
-- **Agent Orchestrator**: LangGraph / LangChain
-- **Vector Database (RAG)**: ChromaDB
-- **Security & Encryption**: Cryptography (Fernet AES-256), PyJWT, Passlib (Bcrypt)
-- **Speech Synthesis**: ElevenLabs TTS API Integration
+| Component | Technology |
+| :--- | :--- |
+| **Runtime & Framework** | Python 3.10+ / FastAPI |
+| **ORM & Database** | SQLAlchemy 2.0, PyMySQL, MySQL 8.0 (SQLite fallback for local dev) |
+| **LLM Inference** | OpenRouter (OpenAI-compatible SDK) — Gemini 2.0 Flash, Gemini 2.5 Flash, LLaMA 3.1 8B |
+| **Agent Orchestrator** | LangGraph / LangChain |
+| **Vector Database (RAG)** | ChromaDB (persistent, per-project isolated collections) |
+| **Embeddings** | `all-MiniLM-L6-v2` (local, zero-cost sentence-transformers) |
+| **Security & Encryption** | Cryptography (Fernet AES-256), PyJWT (HS256), Passlib (Bcrypt) |
+| **Web Crawling** | httpx (async HTTP) + BeautifulSoup4 (HTML parsing) |
+| **Speech Synthesis** | ElevenLabs TTS API |
+| **Migrations** | Alembic |
 
 ### Frontend
-- **Framework**: React 18 (TypeScript)
-- **Build System**: Vite
-- **UI Styling**: Tailwind CSS, Lucide React Icons
-- **HTTP & WebSocket**: Axios, Native WebSocket Web API
+| Component | Technology |
+| :--- | :--- |
+| **Framework** | React 18 (TypeScript) |
+| **Build System** | Vite |
+| **UI Styling** | Tailwind CSS, Lucide React Icons |
+| **HTTP Client** | Axios (with JWT interceptor) |
+| **Real-Time Comms** | Native WebSocket Web API |
+| **Voice Input** | Browser SpeechRecognition API |
 
 ---
 
@@ -66,116 +147,186 @@ The BFSI Multi-Tenant Intelligent Agent Platform empowers financial organization
 
 ```
 Multi-Tenant-Intelligent-Agent-Platform/
-├── db_schema.sql                # Complete MySQL DDL schema and seed data SQL script
-├── README.md                    # System documentation
-├── docker-compose.yml           # Multi-container orchestration (Backend, Admin, Client)
+├── README.md                    # This documentation
+├── db_schema.sql                # Complete MySQL DDL + seed data
+├── schema.sql                   # Condensed schema reference
+├── docker-compose.yml           # Multi-container orchestration
+├── start.bat                    # Windows one-click launcher (all 3 services)
+├── stop.bat                     # Windows service stopper
+├── start.sh / stop.sh           # Linux equivalents
+├── start-all-dev.bat/sh/ps1     # Dev launcher scripts
+├── setup.bat / setup.sh         # Dependency installer
+├── setup-environment.bat/sh     # Full environment setup
+│
 ├── backend/
-│   ├── main.py                  # FastAPI entrypoint & DB seed executor
-│   ├── alembic.ini              # Alembic database migration config
+│   ├── main.py                  # FastAPI entrypoint, auto table creation & DB seeding
 │   ├── requirements.txt         # Python dependencies
+│   ├── alembic.ini              # DB migration config
+│   ├── .env                     # Environment variables (keys, DB, LLM config)
+│   ├── Dockerfile               # Backend container image
 │   ├── app/
-│   │   ├── api/                 # REST Routers (auth, admin, client, analytics, websocket)
-│   │   ├── core/                # Core config, DB session, security vault, guardrails
-│   │   ├── models/              # SQLAlchemy ORM models (Org, User, Project, Config, etc.)
-│   │   ├── orchestrator/        # LangGraph dynamic agent builder, tool factory, RAG engine
-│   │   ├── schemas/             # Pydantic data validation models
-│   │   └── services/            # Analytics aggregator & ElevenLabs TTS service
+│   │   ├── api/
+│   │   │   ├── router_auth.py       # Auth: login, signup, /me
+│   │   │   ├── router_admin.py      # Super Admin: orgs, projects, config, integrations, KB, playground
+│   │   │   ├── router_client.py     # Client: chat (HTTP), conversations, messages
+│   │   │   ├── router_websocket.py  # WebSocket: real-time streaming chat + TTS
+│   │   │   ├── router_analytics.py  # Analytics dashboard + audit logs
+│   │   │   └── dependencies.py      # JWT tenant context & role guards
+│   │   ├── core/
+│   │   │   ├── config.py            # Pydantic Settings (env vars, keys, LLM config)
+│   │   │   ├── database.py          # SQLAlchemy engine & session factory
+│   │   │   ├── security.py          # JWT, bcrypt hashing, Fernet encrypt/decrypt
+│   │   │   └── guardrails.py        # Two-pass guardrail engine (PII, topics, disclaimers)
+│   │   ├── models/                   # SQLAlchemy ORM models (9 tables)
+│   │   │   ├── organization.py, user.py, project.py, project_config.py
+│   │   │   ├── knowledge_doc.py, api_integration.py
+│   │   │   ├── conversation.py, message.py, audit_log.py
+│   │   │   └── __init__.py          # Model registry
+│   │   ├── orchestrator/
+│   │   │   ├── dynamic_graph.py     # Config-driven LangGraph orchestrator (4-pass pipeline)
+│   │   │   ├── dynamic_tools.py     # Runtime tool factory from DB integrations
+│   │   │   └── rag_service.py       # Per-project ChromaDB RAG (index, query, chunk)
+│   │   ├── schemas/                  # Pydantic request/response models
+│   │   └── services/
+│   │       ├── llm_service.py       # OpenRouter LLM client (multi-model fallback)
+│   │       ├── crawler_service.py   # Web crawler → text extraction → vector indexing
+│   │       └── tts_service.py       # ElevenLabs TTS audio generation
 │   ├── scripts/
-│   │   └── schema_and_seed.sql  # MySQL DDL & Seed script copy
-│   └── tests/                   # End-to-end deliverable test suite
+│   │   └── schema_and_seed.sql      # MySQL DDL & seed data
+│   ├── tests/                        # End-to-end test suites (Deliverables 3-8)
+│   ├── uploads/                      # KB file upload storage (per-project dirs)
+│   ├── chroma_db/                    # ChromaDB persistent vector storage
+│   └── migrations/                   # Alembic migration versions
+│
 └── frontend/
-    ├── admin-portal/            # Super Admin SPA (Vite + React + TS, Port 3001)
-    └── client-portal/           # Client Operations SPA (Vite + React + TS, Port 3000)
+    ├── admin-portal/                 # Super Admin SPA (Vite + React + TS, Port 3001)
+    │   ├── src/App.tsx               # Full admin dashboard (orgs, projects, config, KB, playground)
+    │   └── vite.config.ts
+    └── client-portal/                # Client Operations SPA (Vite + React + TS, Port 3000)
+        ├── src/
+        │   ├── App.tsx               # Chat UI, history, analytics, voice I/O
+        │   └── services/api.ts       # Axios client with JWT interceptor
+        └── vite.config.ts
 ```
 
 ---
 
 ## ⚙️ Prerequisites
 
-Before installing and running the project, ensure you have the following installed:
-- **Python**: v3.10 or higher
-- **Node.js**: v18.0 or higher (with `npm`)
-- **MySQL Server**: v8.0 or higher (Optional if using default SQLite fallback for quick testing)
+| Requirement | Version |
+| :--- | :--- |
+| **Python** | 3.10 or higher |
+| **Node.js** | 18.0 or higher (with `npm`) |
+| **MySQL Server** | 8.0+ *(optional — SQLite fallback works for local dev/testing)* |
 
 ---
 
 ## 🔐 Environment Variables & Configuration
 
-Backend settings can be configured via environment variables or inside `backend/app/core/config.py`:
+Backend settings are configured via `backend/.env` or `backend/app/core/config.py`:
 
-| Variable Name | Default Value | Description |
+| Variable | Default | Description |
 | :--- | :--- | :--- |
-| `DATABASE_URL` | `mysql+pymysql://root:root@localhost:3306/bfsi_platform` | MySQL database connection string |
-| `SECRET_KEY` | `super-secret-jwt-signing-key-bfsi-2026` | Key used for signing JWT access tokens |
-| `ENCRYPTION_KEY` | `8cW7bN9YxZ2vP1qR0sT3uV5wX7yZ9aB1cD3eF5gH7iJ=` | Fernet AES-256 key for secret vault |
-| `ELEVENLABS_API_KEY` | `""` | ElevenLabs API key for TTS audio rendering |
-| `OPENAI_API_KEY` | `""` | OpenAI API key for LLM responses |
+| `DATABASE_URL` | `mysql+pymysql://root:root@localhost:3306/bfsi_platform` | MySQL connection string |
+| `JWT_SECRET` | `bfsi-super-secret-jwt-key-2026-change-in-prod` | JWT signing key (HS256) |
+| `ENCRYPTION_KEY` | `uN_4V6kZqX7zP_Y0qL9rT3vW8xM1nB5vC8xD7yZ4wE2=` | Fernet AES-256 key for API secret vault |
+| `OPENROUTER_API_KEY` | *(set in .env)* | OpenRouter API key for LLM inference |
+| `OPENROUTER_BASE_URL` | `https://openrouter.ai/api/v1` | OpenRouter API base URL |
+| `OPENROUTER_DEFAULT_MODEL` | `google/gemini-2.0-flash-001` | Primary LLM model |
+| `OPENROUTER_FALLBACK_MODEL` | `meta-llama/llama-3.1-8b-instruct` | Fallback LLM model |
+| `OPENAI_API_KEY` | `""` | Legacy OpenAI key (optional) |
+| `ELEVENLABS_API_KEY` | `""` | ElevenLabs API key for TTS |
+| `ELEVENLABS_VOICE_ID` | `21m00Tcm4TlvDq8ikWAM` | Default ElevenLabs voice ID |
+| `CHROMA_PERSIST_DIR` | `./chroma_db` | ChromaDB persistent storage path |
 
 ---
 
 ## 🗄️ Database Setup & Schema
 
-1. Ensure MySQL Server is running on `localhost:3306`.
-2. Import the `db_schema.sql` script to create the database and seed records:
-   ```bash
-   mysql -u root -p < db_schema.sql
-   ```
-3. Alternatively, when you run `python backend/main.py`, SQLAlchemy will automatically check for tables and create them if missing.
+### Option A: Auto-Setup (Recommended)
+When you run `python backend/main.py`, SQLAlchemy automatically creates all tables and seeds default data (org, users, project, config).
+
+### Option B: MySQL Manual Import
+```bash
+# Ensure MySQL is running on localhost:3306
+mysql -u root -p < db_schema.sql
+```
+
+### Option C: SQLite Fallback (Zero-Config)
+If MySQL is unavailable, the platform falls back to SQLite (`backend/bfsi_platform_test.db`) for local development and testing.
 
 ---
 
-## 🚀 Quick Startup & Local Execution
+## 🚀 Installation & Quick Start
 
-### 1. Automated One-Command Setup & Launch
-```bash
-# 1. Install dependencies across backend & frontend portals
-./setup-environment.sh
+### 1. Windows One-Click Launch
+```powershell
+# Install all dependencies
+.\setup.bat
 
-# 2. Launch FastAPI Backend (Port 8000), Admin Portal (Port 3000), and Client Portal (Port 3001)
-./start-all-dev.sh
+# Launch all 3 services (Backend + Admin Portal + Client Portal)
+.\start.bat
+
+# Stop all services
+.\stop.bat
 ```
 
-### 2. Manual Startup
+### 2. Linux / macOS
+```bash
+# Install dependencies
+chmod +x setup.sh && ./setup.sh
+
+# Launch all services
+chmod +x start.sh && ./start.sh
+
+# Stop all services
+./stop.sh
+```
+
+### 3. Manual Startup
 
 #### Backend API Server (Port 8000)
 ```bash
 cd backend
-source venv/bin/activate
+pip install -r requirements.txt
 python main.py
 ```
-*Backend will be online at `http://localhost:8000` (Swagger docs at `http://localhost:8000/docs`).*
+> Backend online at `http://localhost:8000` · Swagger docs at `http://localhost:8000/docs`
 
-#### Super Admin Portal (Port 3000)
+#### Super Admin Portal (Port 3001)
 ```bash
 cd frontend/admin-portal
-npm run dev -- --port 3000
+npm install && npm run dev
 ```
-*Super Admin Portal will be online at `http://localhost:3000`.*
+> Admin Portal online at `http://localhost:3001`
 
-#### Client Operations Portal (Port 3001)
+#### Client Operations Portal (Port 3000)
 ```bash
 cd frontend/client-portal
-npm run dev -- --port 3001
+npm install && npm run dev
 ```
-*Client Operations Portal will be online at `http://localhost:3001`.*
+> Client Portal online at `http://localhost:3000`
+
+### 4. Docker Compose
+```bash
+docker-compose up --build
+```
 
 ---
 
 ## 🗄️ Database UI Inspection
 
 ### Web-Based Browser UI (Datasette)
-Launch an instant web interface at `http://localhost:8005` to browse tables (`orgs`, `users`, `projects`, `conversations`, `api_integrations`), filter rows, and run SQL queries:
 ```bash
 cd backend
-./venv/bin/pip install datasette
-./venv/bin/datasette bfsi_platform_test.db --port 8005
+pip install datasette
+datasette bfsi_platform_test.db --port 8005
 ```
+> Browse tables at `http://localhost:8005`
 
-### Desktop GUI Applications
-Open the persistent SQLite database file:
-- **Database File Location**: `backend/bfsi_platform_test.db`
-- **Recommended Tools**: **DB Browser for SQLite** (`brew install --cask db-browser-for-sqlite`), **TablePlus**, or **DBeaver**.
-
+### Desktop GUI Tools
+- **Database File**: `backend/bfsi_platform_test.db`
+- **Recommended**: [DB Browser for SQLite](https://sqlitebrowser.org/), TablePlus, or DBeaver
 
 ---
 
@@ -184,158 +335,222 @@ Open the persistent SQLite database file:
 | Portal | Email | Password | Role |
 | :--- | :--- | :--- | :--- |
 | **Super Admin Portal** | `admin@bfsi.com` | `admin123` | `super_admin` |
-| **Client Operations Portal** | `lead@bfsi.com` | `lead123` | `lead` |
-| **Client Operations Portal** | `supervisor@bfsi.com` | `supervisor123` | `supervisor` |
+| **Client Portal** | `lead@bfsi.com` | `lead123` | `lead` |
+| **Client Portal** | `supervisor@bfsi.com` | `supervisor123` | `supervisor` |
 
 ---
 
-## 📡 Comprehensive API Documentation
+## 📡 API Endpoints Reference
 
-Interactive OpenAPI / Swagger documentation is automatically generated and accessible when the backend server is running:
-- **Interactive Swagger UI**: `http://localhost:8000/docs`
-- **ReDoc UI**: `http://localhost:8000/redoc`
-- **OpenAPI Schema Spec**: `http://localhost:8000/openapi.json`
+> **Interactive Docs** (when backend is running):
+> - Swagger UI: `http://localhost:8000/docs`
+> - ReDoc: `http://localhost:8000/redoc`
+> - OpenAPI Schema: `http://localhost:8000/openapi.json`
 
 ---
 
-### 1. Authentication Endpoints (`/api/auth`)
+### 1. Authentication (`/api/auth`)
 
-#### `POST /api/auth/login`
-Authenticates user credentials and returns a signed JWT access token.
-- **Request Body**:
-  ```json
-  {
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/auth/login` | Authenticate and receive JWT token |
+| `POST` | `/api/auth/signup` | Register new user under an organization |
+| `GET` | `/api/auth/me` | Get current user profile from JWT |
+
+<details>
+<summary>Example: Login Request & Response</summary>
+
+**Request:**
+```json
+POST /api/auth/login
+{
+  "email": "admin@bfsi.com",
+  "password": "admin123"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIs...",
+  "token_type": "bearer",
+  "user": {
+    "id": "33333333-3333-3333-3333-333333333333",
     "email": "admin@bfsi.com",
-    "password": "admin123"
+    "full_name": "Platform Super Admin",
+    "role": "super_admin",
+    "org_id": null,
+    "is_active": true
   }
-  ```
-- **Response (`200 OK`)**:
-  ```json
-  {
-    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "token_type": "bearer",
-    "user": {
-      "id": "33333333-3333-3333-3333-333333333333",
-      "email": "admin@bfsi.com",
-      "full_name": "Platform Super Admin",
-      "role": "super_admin",
-      "org_id": null,
-      "is_active": true
-    }
-  }
-  ```
-
-#### `POST /api/auth/signup`
-Registers a new user under an active organization.
-- **Request Body**:
-  ```json
-  {
-    "email": "advisor@bank.com",
-    "password": "SecurePassword123!",
-    "full_name": "Jane Advisor",
-    "org_id": "11111111-1111-1111-1111-111111111111",
-    "role": "lead"
-  }
-  ```
-
-#### `GET /api/auth/me`
-Retrieves the profile of the currently authenticated user based on `Authorization: Bearer <token>`.
+}
+```
+</details>
 
 ---
 
-### 2. Super Admin Endpoints (`/api/admin`)
-*Requires `Authorization: Bearer <token>` with `super_admin` role.*
+### 2. Super Admin (`/api/admin`) — Requires `super_admin` Role
 
-- `GET /api/admin/organizations` - List all registered organizations.
-- `POST /api/admin/organizations` - Onboard a new tenant organization.
-- `GET /api/admin/templates` - Fetch domain system prompts and guardrails (**banking**, **finance**, **insurance**).
-- `GET /api/admin/projects` - List all projects under active organization.
-- `POST /api/admin/projects` - Create a project initialized with a domain template.
-- `GET /api/admin/projects/{project_id}/config` - Fetch current project prompt, model parameters, and guardrail settings.
-- `PUT /api/admin/projects/{project_id}/config` - Update project configuration.
-- `POST /api/admin/projects/{project_id}/integrations` - Register an external REST API integration (secrets stored with Fernet encryption).
-- `POST /api/admin/integrations/{integration_id}/test-call` - Trigger live test call to external integration.
+#### Organization Management
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/admin/orgs` | List all registered organizations |
+| `POST` | `/api/admin/orgs` | Onboard new tenant organization |
+| `POST` | `/api/admin/orgs/{org_id}/users` | Create user under organization |
 
----
+#### Domain Templates
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/admin/templates` | Fetch BFSI domain templates (Banking, Finance, Insurance) |
 
-### 3. Client Operations & Messaging Endpoints (`/api/client`)
-*Requires `Authorization: Bearer <token>`.*
+#### Project Management
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/admin/orgs/{org_id}/projects` | List projects under organization |
+| `POST` | `/api/admin/orgs/{org_id}/projects` | Create project with domain template |
+| `PATCH` | `/api/admin/projects/{project_id}/status` | Update agent lifecycle state (`Live`/`Paused`/`Draft`) |
 
-- `GET /api/client/conversations` - Retrieve conversation sessions for active project.
-- `GET /api/client/conversations/{session_id}/transcript` - Fetch turn-by-turn message transcript.
-- `POST /api/client/chat` - Send a message to the dynamic LangGraph agent.
-  - **Request Body**:
-    ```json
-    {
-      "project_id": "22222222-2222-2222-2222-222222222222",
-      "session_id": "session-101",
-      "message": "What is the status of my loan application #LN-9942?"
-    }
-    ```
-  - **Response (`200 OK`)**:
-    ```json
-    {
-      "session_id": "session-101",
-      "response": "Your loan application #LN-9942 is currently approved and pending final disbursement. [Disclaimer: Financial information provided for informational purposes.]",
-      "intent": "loan_status_query",
-      "escalation_required": false,
-      "pii_masked": true
-    }
-    ```
+#### Project Configuration
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/admin/projects/{project_id}/config` | Get system prompt, guardrails, model settings |
+| `PUT` | `/api/admin/projects/{project_id}/config` | Update project configuration |
 
----
+#### API Integrations (Secret Vault)
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/admin/projects/{project_id}/integrations` | List registered API integrations |
+| `POST` | `/api/admin/projects/{project_id}/integrations` | Register external API (secrets encrypted) |
+| `POST` | `/api/admin/integrations/{integration_id}/test-call` | Live test-call to external API |
 
-### 4. Operational Analytics & Audit Logs (`/api/analytics`)
+#### Knowledge Base (RAG)
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/admin/projects/{project_id}/kb` | List indexed knowledge documents |
+| `POST` | `/api/admin/projects/{project_id}/kb/upload` | Upload & auto-index document file into Chroma |
+| `POST` | `/api/admin/projects/{project_id}/kb/crawl` | Crawl webpage URL & index into vector store |
 
-- `GET /api/analytics/dashboard` - Fetch aggregate metrics:
-  ```json
-  {
-    "total_sessions": 142,
-    "active_agents": 3,
-    "avg_satisfaction_score": 4.8,
-    "channel_breakdown": { "chat": 88, "voice": 54 },
-    "escalation_rate": 0.04
-  }
-  ```
-- `GET /api/analytics/audit-logs` - Retrieve security audit trail log entries.
+#### Agent Playground
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/admin/projects/{project_id}/playground-test` | Full agent simulation with observability |
 
 ---
 
-### 5. Real-Time Streaming WebSocket (`/ws`)
+### 3. Client Operations (`/api/client`) — Requires Authentication
 
-- `WS /ws/chat/{session_id}?token=<jwt_token>` - Full-duplex WebSocket stream for real-time assistant responses and token streaming.
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/client/projects` | List accessible agents (role-scoped) |
+| `POST` | `/api/client/chat` | Send message to LangGraph orchestrator (HTTP) |
+| `GET` | `/api/client/conversations` | Retrieve conversation sessions |
+| `GET` | `/api/client/conversations/{id}/messages` | Fetch turn-by-turn message transcript |
 
+<details>
+<summary>Example: Chat Request & Response</summary>
+
+**Request:**
+```json
+POST /api/client/chat
+{
+  "project_id": "22222222-2222-2222-2222-222222222222",
+  "session_id": "session-101",
+  "message": "What is the status of my loan application #LN-9942?"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "session_id": "session-101",
+  "answer": "Your loan application #LN-9942 is currently approved and pending final disbursement. *Disclaimer: Not financial advice*",
+  "intent": "banking_rag_faq",
+  "should_escalate": false,
+  "latency_ms": 1245.67
+}
+```
+</details>
+
+---
+
+### 4. Analytics & Audit (`/api/analytics`)
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/analytics/dashboard` | Real-time operational metrics |
+| `GET` | `/api/analytics/audit-logs` | Security audit trail (org-scoped) |
+
+<details>
+<summary>Example: Dashboard Response</summary>
+
+```json
+{
+  "total_conversations": 142,
+  "chat_vs_voice": { "chat": 88, "voice": 54 },
+  "resolution_rate": 96.5,
+  "escalated_conversations": 5,
+  "top_intents": [
+    { "intent": "banking_rag_faq", "count": 45 },
+    { "intent": "loan_status_query", "count": 32 }
+  ],
+  "avg_response_time_ms": 1180.5,
+  "failed_api_calls": 2,
+  "feedback_score": 4.85
+}
+```
+</details>
+
+---
+
+### 5. Real-Time WebSocket (`/ws`)
+
+| Protocol | Endpoint | Description |
+| :--- | :--- | :--- |
+| `WS` | `/ws` or `/ws/{project_id}` | Full-duplex streaming chat |
+
+**Message Protocol:**
+
+| Direction | Type | Description |
+| :--- | :--- | :--- |
+| Client → Server | `PING` | Keepalive heartbeat |
+| Server → Client | `PONG` | Heartbeat response |
+| Client → Server | `USER_MESSAGE` | `{ type, payload, session_id, isVoiceInput }` |
+| Server → Client | `MESSAGE_STREAM` | Token-chunked response text |
+| Server → Client | `MESSAGE_COMPLETE` | Final metadata (intent, model, latency) |
+| Server → Client | `AUDIO_STREAM` | Base64-encoded TTS audio (voice requests) |
+| Server → Client | `ERROR` | Error notification |
 
 ---
 
 ## 📊 Database Schema Details
 
-The platform consists of **9 core relational tables**:
+The platform uses **9 core relational tables**:
 
-1. `organizations`: Root multi-tenant entity.
-2. `users`: System users with role enforcement (`super_admin`, `supervisor`, `lead`).
-3. `projects`: AI Agent projects scoped to `org_id`.
-4. `project_configs`: One-to-one extension of `projects` storing prompts, guardrails, model parameters, and TTS settings.
-5. `knowledge_docs`: RAG document index metadata.
-6. `api_integrations`: Dynamic external API tools with Fernet-encrypted secret credentials.
-7. `conversations`: Chat and Voice interaction sessions.
-8. `messages`: Individual turn messages with token and latency tracking.
-9. `audit_logs`: Immutable audit trails capturing user and system administrative events.
+| # | Table | Description |
+| :--- | :--- | :--- |
+| 1 | `organizations` | Root multi-tenant entity with slug identifier |
+| 2 | `users` | System users with role enforcement (`super_admin`, `supervisor`, `lead`) |
+| 3 | `projects` | AI agent projects scoped to `org_id` with lifecycle state (`Live`/`Paused`/`Draft`) |
+| 4 | `project_configs` | One-to-one extension storing system prompts, guardrails, agent settings, voice settings |
+| 5 | `knowledge_docs` | RAG document index metadata (uploads & web crawls) |
+| 6 | `api_integrations` | External API tools with Fernet-encrypted secret credentials |
+| 7 | `conversations` | Chat and voice interaction sessions with status tracking |
+| 8 | `messages` | Individual turn messages with token usage, latency, tool calls, and flag tracking |
+| 9 | `audit_logs` | Immutable audit trails capturing administrative events |
 
 ---
 
 ## 🧪 Testing Instructions
 
-Run the full end-to-end deliverable test suite:
+Run the end-to-end deliverable test suites:
 
 ```powershell
-python backend/tests/test_deliverable_3.py
-python backend/tests/test_deliverable_4.py
-python backend/tests/test_deliverable_5.py
-python backend/tests/test_deliverable_8.py
+python backend/tests/test_deliverable_3.py     # Core models & DB
+python backend/tests/test_deliverable_4.py     # Admin API endpoints
+python backend/tests/test_deliverable_5.py     # Orchestrator & guardrails
+python backend/tests/test_deliverable_8.py     # Analytics & audit logs
 ```
 
-Expected output upon completion:
+**Expected output:**
 ```text
 [SUCCESS] All Deliverable 3 tests passed successfully!
 [SUCCESS] All Deliverable 4 Admin API tests passed successfully!
@@ -345,44 +560,74 @@ Expected output upon completion:
 
 ---
 
-## 🐳 Build & Deployment Instructions
+## 🐳 Build & Deployment
 
-### Running via Docker Compose
-To run all backend and frontend services in isolated Docker containers:
+### Docker Compose (Full Stack)
 ```bash
 docker-compose up --build
 ```
 
-### Production Build for Frontends
-To compile production static assets for frontends:
+Services launched:
+- `bfsi_mysql` — MySQL 8.0 (Port 3306)
+- `bfsi_chroma` — ChromaDB (Port 8000)
+- `bfsi_backend` — FastAPI Backend (Port 8000)
+- `bfsi_admin_portal` — Admin Portal (Port 3001)
+- `bfsi_client_portal` — Client Portal (Port 3000)
+
+### Production Frontend Builds
 ```bash
 # Super Admin Portal
 cd frontend/admin-portal
-cmd /c npm run build
+npm run build
 
 # Client Operations Portal
 cd frontend/client-portal
-cmd /c npm run build
+npm run build
 ```
+
+### EC2 / Cloud Staging
+Refer to [EC2_STAGING_DEPLOYMENT.md](EC2_STAGING_DEPLOYMENT.md) for detailed cloud deployment instructions.
 
 ---
 
 ## ❓ Troubleshooting & Common Issues
 
-1. **PowerShell Script Execution Error (`npm.ps1 cannot be loaded`)**:
-   - *Cause*: Windows PowerShell script execution policy disables running `.ps1` wrapper scripts.
-   - *Fix*: Use `cmd /c npm run dev` instead of raw `npm run dev` in PowerShell.
-
-2. **Database Connection Error (`Can't connect to MySQL server`)**:
-   - *Cause*: Local MySQL service is offline or credentials differ from `DATABASE_URL`.
-   - *Fix*: Ensure MySQL is running on port 3306 or update `DATABASE_URL` in `backend/app/core/config.py`. If MySQL is unavailable, SQLite fallback will automatically take over for testing.
-
-3. **Port 8000 / 3000 / 3001 Already in Use**:
-   - *Fix*: Stop pre-existing process listening on target port or configure `port` setting in `vite.config.ts`.
+| Issue | Cause | Fix |
+| :--- | :--- | :--- |
+| `npm.ps1 cannot be loaded` | PowerShell execution policy blocks `.ps1` scripts | Use `cmd /c npm run dev` instead of `npm run dev` in PowerShell |
+| `Can't connect to MySQL server` | MySQL offline or credentials mismatch | Ensure MySQL is running on port 3306, or use SQLite fallback (automatic) |
+| `Port 8000/3000/3001 in use` | Another process on target port | Kill existing process or reconfigure port in `vite.config.ts` |
+| `402 Payment Required` (OpenRouter) | Model cost exceeds credit budget | `max_tokens` is auto-capped at 1500; switch to free model via `OPENROUTER_DEFAULT_MODEL` |
+| `Chroma collection not found` | No documents uploaded for project | Upload knowledge base docs or crawl a URL via Admin portal before querying |
+| `ENCRYPTION_KEY mismatch` | Key changed after secrets were stored | Restore original key or re-register API integrations with new secrets |
 
 ---
 
 ## 📝 Important Notes & Assumptions
 
-- **Tenant Isolation**: `org_id` and `project_id` must be provided or derived from the user's JWT token for all client and operational APIs.
-- ** Fernet Secret Encryption**: API integration secret keys are stored encrypted. If `ENCRYPTION_KEY` is modified, previously stored encrypted secrets cannot be decrypted.
+- **Tenant Isolation**: `org_id` and `project_id` are derived from the user's JWT token for all client-facing APIs. Direct cross-tenant access is blocked at the dependency injection layer.
+- **Fernet Secret Encryption**: API integration secrets are stored encrypted. Changing `ENCRYPTION_KEY` invalidates previously encrypted secrets.
+- **LLM Model Fallback**: If the primary OpenRouter model fails (rate limit, budget, downtime), the system automatically retries with fallback models in sequence before returning an error.
+- **RAG Relevance Filtering**: Vector search results with Chroma L2 distance > 1.5 are discarded as irrelevant, ensuring only high-confidence passages are injected into the LLM context.
+- **Agent Lifecycle**: Only agents in `Live` (or legacy `active`) state respond to client queries. The playground endpoint bypasses this restriction for admin testing.
+- **Session History Window**: The orchestrator injects the last 4 conversation turns into the LLM context to maintain conversational coherence.
+- **CORS**: The backend allows all origins (`*`) for development convenience. Restrict in production.
+
+---
+
+## 📚 Additional Documentation
+
+| Document | Description |
+| :--- | :--- |
+| [COMPLETE_SETUP_GUIDE.md](COMPLETE_SETUP_GUIDE.md) | Step-by-step full setup walkthrough |
+| [ENVIRONMENT_SETUP_GUIDE.md](ENVIRONMENT_SETUP_GUIDE.md) | Environment configuration reference |
+| [WINDOWS_STARTUP_GUIDE.md](WINDOWS_STARTUP_GUIDE.md) | Windows-specific startup instructions |
+| [VITE_CONFIG_GUIDE.md](VITE_CONFIG_GUIDE.md) | Frontend Vite configuration details |
+| [WEBSOCKET_INTEGRATION_PLAN.md](WEBSOCKET_INTEGRATION_PLAN.md) | WebSocket protocol design document |
+| [EC2_STAGING_DEPLOYMENT.md](EC2_STAGING_DEPLOYMENT.md) | AWS EC2 staging deployment guide |
+
+---
+
+<p align="center">
+  <sub>Built for BFSI enterprises · Config-driven · Multi-tenant isolated · Production-ready</sub>
+</p>

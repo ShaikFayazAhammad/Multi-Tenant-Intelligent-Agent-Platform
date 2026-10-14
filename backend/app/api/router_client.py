@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from app.core.database import get_db
 from app.api.dependencies import get_tenant_context, TenantContext
 from app.models import Conversation, Message, Project
+from app.schemas.admin import ProjectResponse
 from app.orchestrator.dynamic_graph import DynamicOrchestrator
 
 router = APIRouter(prefix="/api/client", tags=["Client Chat & Conversations"])
@@ -48,9 +49,18 @@ class MessageDetailResponse(BaseModel):
     class Config:
         from_attributes = True
 
+@router.get("/projects", response_model=List[ProjectResponse])
+def get_client_projects(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    """Retrieve agents/projects available to client tenant"""
+    query = db.query(Project)
+    if not ctx.is_super_admin() and ctx.org_id:
+        query = query.filter(Project.org_id == ctx.org_id)
+    projects = query.all()
+    return [ProjectResponse.model_validate(p) for p in projects]
+
 @router.post("/chat", response_model=ChatResponse)
 async def http_chat_endpoint(req: ChatRequest, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
-    """HTTP Chat Endpoint - Multi-Tenant Scoped"""
+    """HTTP Chat Endpoint - Multi-Tenant Scoped with OpenRouter LLM"""
     project = db.query(Project).filter(Project.id == req.project_id).first()
     if not project or not ctx.can_access_org(project.org_id):
         raise HTTPException(status_code=403, detail="Unauthorized access to project")
@@ -83,9 +93,9 @@ async def http_chat_endpoint(req: ChatRequest, db: Session = Depends(get_db), ct
     db.add(user_msg)
     db.commit()
 
-    # Process turn with dynamic orchestrator
+    # Process turn with dynamic orchestrator (executes OpenRouter LLM, guardrails & RAG)
     orchestrator = DynamicOrchestrator(project_id=req.project_id, db=db)
-    result = await orchestrator.process_turn(user_query=req.message)
+    result = await orchestrator.process_turn(user_query=req.message, is_playground=False)
 
     # Save assistant message
     asst_msg = Message(
@@ -94,6 +104,7 @@ async def http_chat_endpoint(req: ChatRequest, db: Session = Depends(get_db), ct
         project_id=req.project_id,
         sender_type="assistant",
         content=result["answer"],
+        tokens_used=result.get("tokens_used", 0),
         latency_ms=int(result.get("latency_ms", 0)),
         tool_calls=result.get("tool_calls", []),
         is_flagged=result.get("is_flagged", False)
@@ -113,6 +124,7 @@ async def http_chat_endpoint(req: ChatRequest, db: Session = Depends(get_db), ct
         should_escalate=result["should_escalate"],
         latency_ms=result["latency_ms"]
     )
+
 
 @router.get("/conversations", response_model=List[ConversationSummaryResponse])
 def get_conversations(project_id: Optional[str] = None, db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):

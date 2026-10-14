@@ -38,6 +38,10 @@ class ProjectCreate(BaseModel):
     name: str
     domain: str = Field(..., description="banking | finance | insurance")
     template_domain: Optional[str] = None # Optional pre-fill template
+    status: Optional[str] = "Live" # Live | Paused | Draft
+
+class ProjectStatusUpdate(BaseModel):
+    status: str = Field(..., description="Live | Paused | Draft")
 
 class ProjectResponse(BaseModel):
     id: str
@@ -48,6 +52,7 @@ class ProjectResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
 
 class DomainTemplate(BaseModel):
     domain: str
@@ -125,7 +130,10 @@ class TestApiCallResponse(BaseModel):
     response_body: Any
     latency_ms: float
 
-# --- Knowledge Base Docs ---
+# --- Knowledge Base Docs & Crawler ---
+class CrawlUrlRequest(BaseModel):
+    url: str
+
 class KnowledgeDocResponse(BaseModel):
     id: str
     org_id: str
@@ -138,3 +146,19 @@ class KnowledgeDocResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+# --- Agent Playground ---
+class PlaygroundTestRequest(BaseModel):
+    query: str
+
+class PlaygroundTestResponse(BaseModel):
+    answer: str
+    intent: str
+    rag_passages: List[Dict[str, Any]] = []
+    tool_calls: List[Dict[str, Any]] = []
+    latency_ms: float
+    tokens_used: int = 0
+    model_used: str = ""
+    is_flagged: bool = False
+    should_escalate: bool = False
+

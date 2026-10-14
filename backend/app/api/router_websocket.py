@@ -56,17 +56,67 @@ async def websocket_chat_endpoint(websocket: WebSocket, project_id: str = None):
 
                     # Dynamic Orchestrator Execution
                     orchestrator = DynamicOrchestrator(project_id=project_id, db=db)
-                    result = await orchestrator.process_turn(user_query=user_text)
+                    result = await orchestrator.process_turn(user_query=user_text, is_playground=False)
 
                     answer = result.get("answer", "I apologize, but I couldn't process your request.")
+
+                    # Persist conversation & messages for history and analytics
+                    try:
+                        proj_obj = db.query(Project).filter(Project.id == project_id).first()
+                        org_id = proj_obj.org_id if proj_obj else "default"
+                        conv = db.query(Conversation).filter(Conversation.session_id == req_session_id).first()
+                        if not conv:
+                            conv = Conversation(
+                                org_id=org_id,
+                                project_id=project_id,
+                                session_id=req_session_id,
+                                channel="voice" if is_voice else "chat",
+                                status="escalated" if result.get("should_escalate") else "active",
+                                intent_summary=result.get("intent")
+                            )
+                            db.add(conv)
+                            db.commit()
+                            db.refresh(conv)
+
+                        # Add User message
+                        db.add(Message(
+                            conversation_id=conv.id,
+                            org_id=org_id,
+                            project_id=project_id,
+                            sender_type="user",
+                            content=user_text,
+                        ))
+                        # Add Assistant message
+                        db.add(Message(
+                            conversation_id=conv.id,
+                            org_id=org_id,
+                            project_id=project_id,
+                            sender_type="assistant",
+                            content=answer,
+                            tokens_used=result.get("tokens_used", 0),
+                            latency_ms=int(result.get("latency_ms", 0)),
+                            tool_calls=result.get("tool_calls", []),
+                            is_flagged=result.get("is_flagged", False)
+                        ))
+                        if result.get("should_escalate"):
+                            conv.status = "escalated"
+                        conv.intent_summary = result.get("intent")
+                        db.commit()
+                    except Exception as persist_err:
+                        logger.warning(f"Failed to persist WS conversation turn: {persist_err}")
 
                     # Stream text tokens back to client
                     chunks = chunk_text(answer)
                     for chunk in chunks:
                         await websocket.send_json({"type": "MESSAGE_STREAM", "payload": chunk})
-                        await asyncio.sleep(0.03)
+                        await asyncio.sleep(0.02)
 
-                    await websocket.send_json({"type": "MESSAGE_COMPLETE", "intent": result.get("intent")})
+                    await websocket.send_json({
+                        "type": "MESSAGE_COMPLETE",
+                        "intent": result.get("intent"),
+                        "model_used": result.get("model_used"),
+                        "latency_ms": result.get("latency_ms"),
+                    })
 
                     # If voice input requested, stream TTS audio
                     if is_voice:
@@ -76,6 +126,7 @@ async def websocket_chat_endpoint(websocket: WebSocket, project_id: str = None):
                             await websocket.send_json({"type": "AUDIO_STREAM", "payload": audio_b64})
                         except Exception as tts_err:
                             logger.error(f"TTS Audio error: {tts_err}")
+
 
             except json.JSONDecodeError:
                 await websocket.send_json({"type": "ERROR", "payload": "Invalid JSON message format"})

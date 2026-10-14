@@ -50,8 +50,12 @@ export const adminApi = {
     const res = await api.get(`/admin/orgs/${orgId}/projects`);
     return res.data;
   },
-  createProject: async (orgId: string, name: string, domain: string, templateDomain?: string) => {
-    const res = await api.post(`/admin/orgs/${orgId}/projects`, { name, domain, template_domain: templateDomain });
+  createProject: async (orgId: string, name: string, domain: string, templateDomain?: string, status: string = 'Live') => {
+    const res = await api.post(`/admin/orgs/${orgId}/projects`, { name, domain, template_domain: templateDomain, status });
+    return res.data;
+  },
+  updateProjectStatus: async (projectId: string, status: string) => {
+    const res = await api.patch(`/admin/projects/${projectId}/status`, { status });
     return res.data;
   },
 
@@ -83,7 +87,7 @@ export const adminApi = {
     return res.data;
   },
 
-  // KB Docs
+  // KB Docs & Web Crawler
   getKbDocs: async (projectId: string) => {
     const res = await api.get(`/admin/projects/${projectId}/kb`);
     return res.data;
@@ -96,9 +100,15 @@ export const adminApi = {
     });
     return res.data;
   },
-  // Playground Test Chat
-  testPlaygroundChat: async (projectId: string, message: string) => {
-    const res = await api.post('/client/chat', { project_id: projectId, message });
+  crawlUrl: async (projectId: string, url: string) => {
+    const res = await api.post(`/admin/projects/${projectId}/kb/crawl`, { url });
+    return res.data;
+  },
+
+  // Playground Test Simulation with Real OpenRouter LLM & RAG Context
+  testPlaygroundChat: async (projectId: string, query: string) => {
+    const res = await api.post(`/admin/projects/${projectId}/playground-test`, { query });
     return res.data;
   },
 };
+

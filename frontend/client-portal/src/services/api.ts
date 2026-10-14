@@ -16,7 +16,7 @@ api.interceptors.request.use((config) => {
 
 export const clientApi = {
   // Auth
-  login: async (email: string, password: str) => {
+  login: async (email: string, password: string) => {
     const res = await api.post('/auth/login', { email, password });
     return res.data;
   },
@@ -26,10 +26,11 @@ export const clientApi = {
   },
 
   // Projects visibility based on role (Supervisor sees all org projects, Lead sees assigned)
-  getProjects: async (orgId: string) => {
-    const res = await api.get(`/admin/orgs/${orgId}/projects`);
+  getProjects: async (orgId?: string) => {
+    const res = await api.get('/client/projects');
     return res.data;
   },
+
 
   // Chat HTTP fallback
   sendMessage: async (projectId: string, message: string, sessionId?: string) => {
