@@ -62,9 +62,7 @@ User Query → Input Guardrail (PII mask, topic block)
 | **Agent Playground Simulator** | Full-stack simulation endpoint for admins: runs input guardrails → RAG → tool triggers → LLM → output guardrails with complete observability (latency, tokens, model, passages, flags). |
 | **Real-Time WebSocket Streaming** | Token-chunked message streaming over WebSocket with `MESSAGE_STREAM` / `MESSAGE_COMPLETE` protocol. Conversation persistence and analytics tracking built-in. |
 | **ElevenLabs Text-to-Speech** | Voice input triggers TTS audio generation via ElevenLabs API, base64-encoded and streamed back over WebSocket (`AUDIO_STREAM`). |
-| **Speech-to-Text (Browser STT)** | Client portal integrates native `SpeechRecognition` Web API for voice input transcription. |
-| **Dual Role-Tailored Portals** | **Super Admin Portal** (Port `3001`): tenant, user, project, template, integration, KB, and guardrail management. **Client Operations Portal** (Port `3000`): role-scoped dashboards, real-time chat, conversation history, analytics. |
-| **Operational Analytics Dashboard** | Real-time metrics: total conversations, chat vs. voice breakdown, resolution rate, escalated count, top intents, avg response latency, failed API calls. |
+| **Multi-Portal Experience** | **Flagship Landing Page** (Port `3002` / `http://localhost:3002`): modern dark/light mode home screen, interactive video demo showcases, and direct portal navigation. **Super Admin Portal** (Port `3001` / `http://localhost:3001`): tenant, user, project, template, integration, KB, and guardrail management. **Client Operations Portal** (Port `3000` / `http://localhost:3000`): role-scoped dashboards, real-time WebSocket chat, conversation history, and voice AI. |
 | **Immutable Audit Logs** | Security audit trail capturing all administrative events, scoped by organization. |
 
 ---
@@ -293,6 +291,13 @@ python main.py
 ```
 > Backend online at `http://localhost:8000` · Swagger docs at `http://localhost:8000/docs`
 
+#### Flagship Landing Page (Port 3002)
+```bash
+cd frontend/landing-page
+npm install && npm run dev
+```
+> Landing Page online at `http://localhost:3002`
+
 #### Super Admin Portal (Port 3001)
 ```bash
 cd frontend/admin-portal
@@ -314,13 +319,26 @@ docker-compose up --build
 
 ---
 
+## 🌐 Service Ports & Access URLs
+
+| Service / Portal | Port | URL | Access / Role |
+| :--- | :---: | :--- | :--- |
+| **Flagship Landing Page** | `3002` | [http://localhost:3002](http://localhost:3002) | Public Home Screen (Dark/Light Mode, Video Demos) |
+| **Super Admin Portal** | `3001` | [http://localhost:3001](http://localhost:3001) | Organization, Tenant, Project & Tool Administration |
+| **Client Operations Portal** | `3000` | [http://localhost:3000](http://localhost:3000) | Branch Leads & Supervisors (WebSocket Chat & Voice) |
+| **Main Backend API** | `8000` | [http://localhost:8000](http://localhost:8000) | FastAPI REST & WebSocket Server |
+| **Swagger Interactive Docs** | `8000` | [http://localhost:8000/docs](http://localhost:8000/docs) | OpenAPI Interactive API Documentation |
+| **Database Web UI (Datasette)** | `8005` | [http://localhost:8005](http://localhost:8005) | Visual SQLite / Relational Database Explorer |
+
+---
+
 ## 🗄️ Database UI Inspection
 
 ### Web-Based Browser UI (Datasette)
 ```bash
 cd backend
 pip install datasette
-datasette bfsi_platform_test.db --port 8005
+datasette serve bfsi_platform_test.db --port 8005
 ```
 > Browse tables at `http://localhost:8005`
 
