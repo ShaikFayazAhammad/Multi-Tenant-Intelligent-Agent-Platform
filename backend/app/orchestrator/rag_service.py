@@ -129,6 +129,26 @@ class PerProjectRAGService:
             return 0
 
     @classmethod
+    def delete_document_chunks(cls, project_id: str, filename: str) -> bool:
+        """
+        Delete all indexed chunks associated with a specific filename in a project's collection.
+        """
+        try:
+            client = cls._get_client()
+            col_name = cls._get_collection_name(project_id)
+            try:
+                collection = client.get_collection(name=col_name, embedding_function=cls._embedding_fn)
+            except Exception:
+                return False
+
+            collection.delete(where={"filename": filename})
+            logger.info(f"[Chroma RAG] Deleted chunks for file '{filename}' from collection '{col_name}'")
+            return True
+        except Exception as e:
+            logger.warning(f"[Chroma RAG] Failed to delete chunks for '{filename}' in '{project_id}': {e}")
+            return False
+
+    @classmethod
     def query_project_kb(
         cls,
         project_id: str,

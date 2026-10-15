@@ -16,37 +16,25 @@ logger = logging.getLogger(__name__)
 
 
 class OpenRouterLLM:
-    """OpenAI-compatible client wired to OpenRouter base URL"""
+    """OpenAI-compatible client wired to OpenRouter base URL with streaming support"""
 
     def __init__(self):
         self.client = OpenAI(
             api_key=settings.OPENROUTER_API_KEY,
             base_url=settings.OPENROUTER_BASE_URL,
         )
-        self.default_model = settings.OPENROUTER_DEFAULT_MODEL
+        self.default_model = settings.OPENROUTER_DEFAULT_MODEL or "meta-llama/llama-3.1-8b-instruct"
         self.fallback_models = [
-            "google/gemini-2.5-flash",
             "meta-llama/llama-3.1-8b-instruct",
-            "meta-llama/llama-3.1-8b-instruct:free",
+            "google/gemini-2.5-flash",
         ]
 
-    def chat(
+    def _prepare_messages(
         self,
         system_prompt: str,
         messages: List[Dict[str, str]],
-        model: Optional[str] = None,
-        temperature: float = 0.2,
-        max_tokens: int = 1024,
-        rag_context: Optional[str] = None,
-    ) -> Dict[str, Any]:
-        """
-        Execute a chat completion via OpenRouter.
-        Returns dict with: answer, tokens_used, latency_ms, model_used, success
-        """
-        # Ensure fresh client with current key
-        if not self.client.api_key:
-            self.client.api_key = settings.OPENROUTER_API_KEY
-
+        rag_context: Optional[str] = None
+    ) -> List[Dict[str, str]]:
         effective_system = system_prompt
         if rag_context and rag_context.strip():
             effective_system = (
@@ -63,22 +51,39 @@ class OpenRouterLLM:
             )
             logger.info(f"[LLM] RAG context injected into system prompt ({len(rag_context)} chars)")
 
-        # Build full message list with system prompt
-        full_messages = [{"role": "system", "content": effective_system}] + messages
+        return [{"role": "system", "content": effective_system}] + messages
 
-        # Cap max_tokens to prevent 402 OpenRouter budget errors on high-context models
-        safe_max_tokens = min(max_tokens if max_tokens and max_tokens > 0 else 1024, 1500)
-
-        # Determine models to try in sequence
+    def _get_candidate_models(self, requested_model: Optional[str] = None) -> List[str]:
         models_to_try = []
-        if model and model not in ["gpt-4o-mini", "default"]:
-            models_to_try.append(model)
+        if requested_model and requested_model not in ["gpt-4o-mini", "default", "google/gemini-2.0-flash-001"]:
+            models_to_try.append(requested_model)
         else:
             models_to_try.append(self.default_model)
 
         for fb in self.fallback_models:
             if fb not in models_to_try:
                 models_to_try.append(fb)
+        return models_to_try
+
+    def chat(
+        self,
+        system_prompt: str,
+        messages: List[Dict[str, str]],
+        model: Optional[str] = None,
+        temperature: float = 0.2,
+        max_tokens: int = 1024,
+        rag_context: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """
+        Execute a standard chat completion via OpenRouter.
+        Returns dict with: answer, tokens_used, latency_ms, model_used, success
+        """
+        if not self.client.api_key:
+            self.client.api_key = settings.OPENROUTER_API_KEY
+
+        full_messages = self._prepare_messages(system_prompt, messages, rag_context)
+        safe_max_tokens = min(max_tokens if max_tokens and max_tokens > 0 else 1024, 1500)
+        models_to_try = self._get_candidate_models(model)
 
         start = time.time()
         last_error = None
@@ -118,6 +123,86 @@ class OpenRouterLLM:
         return {
             "answer": f"I apologize, but our AI service is momentarily unavailable. ({err_msg[:90]})",
             "tokens_used": 0,
+            "latency_ms": latency_ms,
+            "model_used": models_to_try[0] if models_to_try else "none",
+            "success": False,
+        }
+
+    def chat_stream(
+        self,
+        system_prompt: str,
+        messages: List[Dict[str, str]],
+        model: Optional[str] = None,
+        temperature: float = 0.2,
+        max_tokens: int = 1024,
+        rag_context: Optional[str] = None,
+    ):
+        """
+        Execute a streaming chat completion via OpenRouter.
+        Yields chunk dicts:
+          - {"type": "token", "payload": delta_text}
+          - {"type": "complete", "answer": full_text, "latency_ms": ms, "model_used": model, "tokens_used": est}
+          - {"type": "error", "answer": err_msg, "latency_ms": ms, "model_used": "none"}
+        """
+        if not self.client.api_key:
+            self.client.api_key = settings.OPENROUTER_API_KEY
+
+        full_messages = self._prepare_messages(system_prompt, messages, rag_context)
+        safe_max_tokens = min(max_tokens if max_tokens and max_tokens > 0 else 1024, 1500)
+        models_to_try = self._get_candidate_models(model)
+
+        start = time.time()
+        last_error = None
+
+        for target_model in models_to_try:
+            try:
+                logger.info(f"[OpenRouter Stream] Initiating stream for model: {target_model}")
+                stream = self.client.chat.completions.create(
+                    model=target_model,
+                    messages=full_messages,
+                    temperature=temperature,
+                    max_tokens=safe_max_tokens,
+                    stream=True,
+                    extra_headers={
+                        "HTTP-Referer": "https://bfsi-platform.ai",
+                        "X-Title": "BFSI Multi-Tenant Agent Platform",
+                    },
+                )
+
+                accumulated: List[str] = []
+                for chunk in stream:
+                    delta = chunk.choices[0].delta.content if chunk.choices and chunk.choices[0].delta else None
+                    if delta:
+                        accumulated.append(delta)
+                        yield {"type": "token", "payload": delta}
+
+                full_answer = "".join(accumulated)
+                latency_ms = round((time.time() - start) * 1000, 2)
+                # Approximate token count: ~4 chars per token
+                approx_tokens = max(len(full_answer) // 4, len(accumulated))
+                logger.info(f"[OpenRouter Stream] SUCCESS model={target_model} tokens~={approx_tokens} latency={latency_ms}ms")
+
+                yield {
+                    "type": "complete",
+                    "answer": full_answer,
+                    "tokens_used": approx_tokens,
+                    "latency_ms": latency_ms,
+                    "model_used": target_model,
+                    "success": True,
+                }
+                return
+
+            except Exception as e:
+                logger.warning(f"[OpenRouter Stream] Model {target_model} stream failed: {e}")
+                last_error = e
+                continue
+
+        latency_ms = round((time.time() - start) * 1000, 2)
+        err_msg = str(last_error) if last_error else "All streaming models failed"
+        logger.error(f"[OpenRouter Stream] All models failed. Error: {err_msg}")
+        yield {
+            "type": "error",
+            "answer": f"I apologize, but our AI service is momentarily unavailable. ({err_msg[:90]})",
             "latency_ms": latency_ms,
             "model_used": models_to_try[0] if models_to_try else "none",
             "success": False,
