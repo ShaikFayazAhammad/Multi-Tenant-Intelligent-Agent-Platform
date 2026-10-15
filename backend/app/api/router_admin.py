@@ -22,6 +22,7 @@ from app.schemas.admin import (
 from app.schemas.auth import UserResponse
 from app.orchestrator.rag_service import PerProjectRAGService
 from app.services.crawler_service import WebCrawlerService
+from app.services.document_parser import DocumentParser, DocumentParseError
 from app.orchestrator.dynamic_graph import DynamicOrchestrator
 
 
@@ -320,7 +321,7 @@ async def upload_knowledge_doc(
     db: Session = Depends(get_db),
     ctx: TenantContext = Depends(require_super_admin)
 ):
-    """Upload document file, chunk content, and index into Chroma vector store"""
+    """Upload document file (PDF, TXT, CSV, MD, JSON), extract text, chunk, and index into Chroma vector store"""
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -333,39 +334,125 @@ async def upload_knowledge_doc(
     with open(file_path, "wb") as f:
         f.write(content)
 
-    # Decode text if possible and index into Chroma vector collection
-    chunks_count = 0
+    # Extract clean text using DocumentParser (handles PDF, CSV, TXT, MD, etc.)
     try:
-        text_content = content.decode("utf-8", errors="replace")
-        if len(text_content.strip()) > 20:
-            chunks_count = PerProjectRAGService.index_document_text(
-                project_id=project_id,
-                filename=file.filename,
-                content=text_content,
-                source="file_upload",
-                extra_metadata={"uploaded_by": ctx.user.email}
-            )
+        parsed = DocumentParser.extract_text(
+            content=content,
+            filename=file.filename,
+            content_type=file.content_type
+        )
+        text_content = parsed["text"]
+    except DocumentParseError as pe:
+        logger.error(f"Document parsing error for {file.filename}: {pe}")
+        raise HTTPException(status_code=400, detail=str(pe))
     except Exception as e:
-        logger.warning(f"Failed to auto-index uploaded text: {e}")
+        logger.error(f"Unexpected document parsing failure for {file.filename}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to process document: {str(e)}")
 
-    doc = KnowledgeDoc(
-        org_id=project.org_id,
-        project_id=project_id,
-        filename=file.filename,
-        file_path=file_path,
-        file_size=len(content),
-        collection_name=f"proj_{project_id}",
-        status="indexed",
-        doc_metadata={
-            "content_type": file.content_type,
-            "uploaded_by": ctx.user.email,
-            "chunks_count": chunks_count
-        }
-    )
-    db.add(doc)
+    # Remove existing chunks for this filename in this project's collection to avoid duplicate/stale vectors
+    PerProjectRAGService.delete_document_chunks(project_id=project_id, filename=file.filename)
+
+    chunks_count = 0
+    if text_content and len(text_content.strip()) > 15:
+        chunks_count = PerProjectRAGService.index_document_text(
+            project_id=project_id,
+            filename=file.filename,
+            content=text_content,
+            source="file_upload",
+            extra_metadata={
+                "uploaded_by": ctx.user.email,
+                "file_type": parsed.get("file_type", "unknown"),
+                "page_count": parsed.get("page_count", 1),
+            }
+        )
+
+    # Upsert or create database KnowledgeDoc record
+    existing_doc = db.query(KnowledgeDoc).filter(
+        KnowledgeDoc.project_id == project_id,
+        KnowledgeDoc.filename == file.filename
+    ).first()
+
+    doc_meta = {
+        "content_type": file.content_type,
+        "file_type": parsed.get("file_type", "unknown"),
+        "page_count": parsed.get("page_count", 1),
+        "char_count": parsed.get("char_count", len(text_content)),
+        "uploaded_by": ctx.user.email,
+        "chunks_count": chunks_count,
+        "warnings": parsed.get("warnings", []),
+    }
+
+    if existing_doc:
+        existing_doc.file_path = file_path
+        existing_doc.file_size = len(content)
+        existing_doc.status = "indexed" if chunks_count > 0 else "failed"
+        existing_doc.doc_metadata = doc_meta
+        doc = existing_doc
+    else:
+        doc = KnowledgeDoc(
+            org_id=project.org_id,
+            project_id=project_id,
+            filename=file.filename,
+            file_path=file_path,
+            file_size=len(content),
+            collection_name=f"proj_{project_id}",
+            status="indexed" if chunks_count > 0 else "failed",
+            doc_metadata=doc_meta
+        )
+        db.add(doc)
+
     db.commit()
     db.refresh(doc)
+    return KnowledgeDocResponse.model_validate(doc)
 
+@router.post("/projects/{project_id}/kb/{doc_id}/reindex", response_model=KnowledgeDocResponse)
+def reindex_knowledge_doc(
+    project_id: str,
+    doc_id: str,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(require_super_admin)
+):
+    """Re-extract and re-index an existing Knowledge Base document from its stored file on disk"""
+    doc = db.query(KnowledgeDoc).filter(KnowledgeDoc.id == doc_id, KnowledgeDoc.project_id == project_id).first()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Knowledge doc not found")
+
+    if not os.path.exists(doc.file_path):
+        raise HTTPException(status_code=404, detail=f"File not found on disk at {doc.file_path}")
+
+    with open(doc.file_path, "rb") as f:
+        content = f.read()
+
+    parsed = DocumentParser.extract_text(content=content, filename=doc.filename)
+    text_content = parsed["text"]
+
+    # Delete old chunks
+    PerProjectRAGService.delete_document_chunks(project_id=project_id, filename=doc.filename)
+
+    chunks_count = PerProjectRAGService.index_document_text(
+        project_id=project_id,
+        filename=doc.filename,
+        content=text_content,
+        source="file_upload",
+        extra_metadata={
+            "reindexed_by": ctx.user.email,
+            "file_type": parsed.get("file_type", "unknown"),
+            "page_count": parsed.get("page_count", 1),
+        }
+    )
+
+    doc.status = "indexed" if chunks_count > 0 else "failed"
+    current_meta = doc.doc_metadata or {}
+    current_meta.update({
+        "chunks_count": chunks_count,
+        "char_count": parsed.get("char_count", len(text_content)),
+        "page_count": parsed.get("page_count", 1),
+        "file_type": parsed.get("file_type", "unknown"),
+        "reindexed_at": str(time.time()),
+    })
+    doc.doc_metadata = current_meta
+    db.commit()
+    db.refresh(doc)
     return KnowledgeDocResponse.model_validate(doc)
 
 # --- WEB CRAWLER ENDPOINT ---

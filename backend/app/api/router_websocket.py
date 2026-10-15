@@ -54,11 +54,40 @@ async def websocket_chat_endpoint(websocket: WebSocket, project_id: str = None):
                     req_session_id = msg.get("session_id", session_id)
                     is_voice = msg.get("isVoiceInput", False)
 
-                    # Dynamic Orchestrator Execution
+                    # Dynamic Orchestrator Execution with Real-Time Token Streaming
                     orchestrator = DynamicOrchestrator(project_id=project_id, db=db)
-                    result = await orchestrator.process_turn(user_query=user_text, is_playground=False)
+                    final_result = None
 
-                    answer = result.get("answer", "I apologize, but I couldn't process your request.")
+                    async for stream_event in orchestrator.process_turn_stream(user_query=user_text, is_playground=False):
+                        if stream_event["type"] == "token":
+                            # Stream live token chunk directly to client
+                            await websocket.send_json({
+                                "type": "MESSAGE_STREAM",
+                                "payload": stream_event["payload"]
+                            })
+                        elif stream_event["type"] == "complete":
+                            final_result = stream_event
+
+                    if not final_result:
+                        final_result = {
+                            "answer": "I apologize, but I couldn't process your request.",
+                            "intent": "general_query",
+                            "tokens_used": 0,
+                            "latency_ms": 0.0,
+                            "model_used": "unknown",
+                            "should_escalate": False,
+                            "tool_calls": [],
+                        }
+
+                    answer = final_result.get("answer", "")
+
+                    # Send completion event with full metadata
+                    await websocket.send_json({
+                        "type": "MESSAGE_COMPLETE",
+                        "intent": final_result.get("intent"),
+                        "model_used": final_result.get("model_used"),
+                        "latency_ms": final_result.get("latency_ms"),
+                    })
 
                     # Persist conversation & messages for history and analytics
                     try:
@@ -71,8 +100,8 @@ async def websocket_chat_endpoint(websocket: WebSocket, project_id: str = None):
                                 project_id=project_id,
                                 session_id=req_session_id,
                                 channel="voice" if is_voice else "chat",
-                                status="escalated" if result.get("should_escalate") else "active",
-                                intent_summary=result.get("intent")
+                                status="escalated" if final_result.get("should_escalate") else "active",
+                                intent_summary=final_result.get("intent")
                             )
                             db.add(conv)
                             db.commit()
@@ -93,33 +122,20 @@ async def websocket_chat_endpoint(websocket: WebSocket, project_id: str = None):
                             project_id=project_id,
                             sender_type="assistant",
                             content=answer,
-                            tokens_used=result.get("tokens_used", 0),
-                            latency_ms=int(result.get("latency_ms", 0)),
-                            tool_calls=result.get("tool_calls", []),
-                            is_flagged=result.get("is_flagged", False)
+                            tokens_used=final_result.get("tokens_used", 0),
+                            latency_ms=int(final_result.get("latency_ms", 0)),
+                            tool_calls=final_result.get("tool_calls", []),
+                            is_flagged=final_result.get("is_flagged", False)
                         ))
-                        if result.get("should_escalate"):
+                        if final_result.get("should_escalate"):
                             conv.status = "escalated"
-                        conv.intent_summary = result.get("intent")
+                        conv.intent_summary = final_result.get("intent")
                         db.commit()
                     except Exception as persist_err:
                         logger.warning(f"Failed to persist WS conversation turn: {persist_err}")
 
-                    # Stream text tokens back to client
-                    chunks = chunk_text(answer)
-                    for chunk in chunks:
-                        await websocket.send_json({"type": "MESSAGE_STREAM", "payload": chunk})
-                        await asyncio.sleep(0.02)
-
-                    await websocket.send_json({
-                        "type": "MESSAGE_COMPLETE",
-                        "intent": result.get("intent"),
-                        "model_used": result.get("model_used"),
-                        "latency_ms": result.get("latency_ms"),
-                    })
-
                     # If voice input requested, stream TTS audio
-                    if is_voice:
+                    if is_voice and answer:
                         try:
                             audio_bytes = text_to_speech(answer)
                             audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")

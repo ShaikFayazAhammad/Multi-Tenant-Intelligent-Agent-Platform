@@ -52,15 +52,15 @@ User Query → Input Guardrail (PII mask, topic block)
 | :--- | :--- |
 | **Multi-Tenant Data Isolation** | Every relational entity and vector collection is scoped by `org_id` and `project_id` via JWT claims and FastAPI dependency injection. |
 | **Config-Driven Dynamic Orchestrator** | LangGraph agent graphs are constructed at runtime per session using project configs (system prompts, temperature, model, enabled tools, guardrails). |
-| **OpenRouter Multi-Model LLM** | Uses OpenRouter's OpenAI-compatible API with automatic fallback chain: `gemini-2.0-flash-001` → `gemini-2.5-flash` → `llama-3.1-8b-instruct`. |
-| **Per-Project RAG Isolation** | ChromaDB vector collections partitioned per project (`proj_{project_id}`) with `all-MiniLM-L6-v2` embeddings. Prevents cross-tenant knowledge leaks. |
+| **OpenRouter Multi-Model LLM** | Uses OpenRouter's OpenAI-compatible API with automatic fallback chain: `meta-llama/llama-3.1-8b-instruct` → `google/gemini-2.5-flash`. |
+| **Per-Project RAG Isolation** | ChromaDB vector collections partitioned per project (`proj_{project_id}`) with `all-MiniLM-L6-v2` embeddings. Prevents cross-tenant knowledge leaks. Async execution (`asyncio.to_thread`) prevents event loop blocking. |
 | **Web Crawler Knowledge Ingestion** | Crawl any public webpage, extract clean text (BeautifulSoup), chunk, and auto-index into the project's isolated vector store. |
-| **Knowledge Base File Upload** | Upload `.txt`, `.md`, `.csv`, or similar text documents — automatically chunked and indexed into Chroma. |
+| **Multi-Format Knowledge Base Ingestion** | Upload `.pdf`, `.csv`, `.txt`, `.md`, or `.json` files. PDFs are cleanly extracted via `pypdf` with page markers, text normalization, and unprintable byte stripping. Includes stale chunk purging and one-click re-indexing. |
 | **External API Integrations Vault** | Secure REST API tool connector with **Fernet AES-256 encryption** for secrets. Supports Bearer token & API key auth. Live test-call execution from Admin portal. |
 | **Two-Pass Guardrail Engine** | **Pass 1 (Input):** PII masking (credit cards, SSNs, emails, phone numbers), blocked topic detection. **Pass 2 (Output):** Output PII sanitization, mandatory disclaimer injection, negative-sentiment escalation triggers. |
 | **Agent Lifecycle Management** | Three-state lifecycle (`Live` / `Paused` / `Draft`). Only Live agents respond to client queries; Paused/Draft agents return a status notice. Playground bypasses lifecycle gates. |
 | **Agent Playground Simulator** | Full-stack simulation endpoint for admins: runs input guardrails → RAG → tool triggers → LLM → output guardrails with complete observability (latency, tokens, model, passages, flags). |
-| **Real-Time WebSocket Streaming** | Token-chunked message streaming over WebSocket with `MESSAGE_STREAM` / `MESSAGE_COMPLETE` protocol. Conversation persistence and analytics tracking built-in. |
+| **Real-Time Token Streaming** | Real-time token streaming over WebSocket (`MESSAGE_STREAM` / `MESSAGE_COMPLETE`) and HTTP Server-Sent Events (`POST /api/client/chat/stream`). Zero artificial buffering or fake delays. |
 | **ElevenLabs Text-to-Speech** | Voice input triggers TTS audio generation via ElevenLabs API, base64-encoded and streamed back over WebSocket (`AUDIO_STREAM`). |
 | **Multi-Portal Experience** | **Flagship Landing Page** (Port `3002` / `http://localhost:3002`): modern dark/light mode home screen, interactive video demo showcases, and direct portal navigation. **Super Admin Portal** (Port `3001` / `http://localhost:3001`): tenant, user, project, template, integration, KB, and guardrail management. **Client Operations Portal** (Port `3000` / `http://localhost:3000`): role-scoped dashboards, real-time WebSocket chat, conversation history, and voice AI. |
 | **Immutable Audit Logs** | Security audit trail capturing all administrative events, scoped by organization. |

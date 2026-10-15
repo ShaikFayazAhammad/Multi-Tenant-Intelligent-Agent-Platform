@@ -38,8 +38,8 @@ class Settings(BaseSettings):
     # OpenRouter LLM (primary)
     OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "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")
     OPENROUTER_BASE_URL: str = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
-    OPENROUTER_DEFAULT_MODEL: str = os.getenv("OPENROUTER_DEFAULT_MODEL", "google/gemini-2.0-flash-001")
-    OPENROUTER_FALLBACK_MODEL: str = os.getenv("OPENROUTER_FALLBACK_MODEL", "meta-llama/llama-3.1-8b-instruct")
+    OPENROUTER_DEFAULT_MODEL: str = os.getenv("OPENROUTER_DEFAULT_MODEL", "meta-llama/llama-3.1-8b-instruct")
+    OPENROUTER_FALLBACK_MODEL: str = os.getenv("OPENROUTER_FALLBACK_MODEL", "google/gemini-2.5-flash")
 
     # ElevenLabs TTS
     ELEVENLABS_API_KEY: str = os.getenv("ELEVENLABS_API_KEY", "")

@@ -1,7 +1,9 @@
+import json
 import uuid
 from typing import List, Optional
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from app.core.database import get_db
@@ -124,6 +126,81 @@ async def http_chat_endpoint(req: ChatRequest, db: Session = Depends(get_db), ct
         should_escalate=result["should_escalate"],
         latency_ms=result["latency_ms"]
     )
+
+@router.post("/chat/stream")
+async def http_chat_stream_endpoint(
+    req: ChatRequest,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(get_tenant_context)
+):
+    """Server-Sent Events (SSE) streaming endpoint for HTTP clients"""
+    project = db.query(Project).filter(Project.id == req.project_id).first()
+    if not project or not ctx.can_access_org(project.org_id):
+        raise HTTPException(status_code=403, detail="Unauthorized access to project")
+
+    session_id = req.session_id or str(uuid.uuid4())
+
+    # Get or create conversation row
+    conv = db.query(Conversation).filter(Conversation.session_id == session_id).first()
+    if not conv:
+        conv = Conversation(
+            org_id=project.org_id,
+            project_id=req.project_id,
+            user_id=ctx.user_id,
+            session_id=session_id,
+            channel=req.channel or "chat",
+            status="active"
+        )
+        db.add(conv)
+        db.commit()
+        db.refresh(conv)
+
+    # Save user message
+    user_msg = Message(
+        conversation_id=conv.id,
+        org_id=project.org_id,
+        project_id=req.project_id,
+        sender_type="user",
+        content=req.message
+    )
+    db.add(user_msg)
+    db.commit()
+
+    orchestrator = DynamicOrchestrator(project_id=req.project_id, db=db)
+
+    async def sse_generator():
+        final_result = None
+        async for event in orchestrator.process_turn_stream(user_query=req.message, is_playground=False):
+            if event["type"] == "token":
+                yield f"data: {json.dumps({'type': 'token', 'payload': event['payload']})}\n\n"
+            elif event["type"] == "complete":
+                final_result = event
+
+        if final_result:
+            # Persist assistant message
+            try:
+                asst_msg = Message(
+                    conversation_id=conv.id,
+                    org_id=project.org_id,
+                    project_id=req.project_id,
+                    sender_type="assistant",
+                    content=final_result.get("answer", ""),
+                    tokens_used=final_result.get("tokens_used", 0),
+                    latency_ms=int(final_result.get("latency_ms", 0)),
+                    tool_calls=final_result.get("tool_calls", []),
+                    is_flagged=final_result.get("is_flagged", False)
+                )
+                db.add(asst_msg)
+                if final_result.get("should_escalate"):
+                    conv.status = "escalated"
+                conv.intent_summary = final_result.get("intent")
+                db.commit()
+            except Exception as e:
+                db.rollback()
+
+            yield f"data: {json.dumps({'type': 'complete', 'answer': final_result.get('answer'), 'intent': final_result.get('intent'), 'model_used': final_result.get('model_used'), 'latency_ms': final_result.get('latency_ms')})}\n\n"
+
+    return StreamingResponse(sse_generator(), media_type="text/event-stream")
 
 
 @router.get("/conversations", response_model=List[ConversationSummaryResponse])
