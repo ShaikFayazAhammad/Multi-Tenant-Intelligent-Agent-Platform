@@ -6,8 +6,17 @@ venv/
 .venv/
 backend/venv/
 backend/uploads/
+backend/chroma_db/
+chroma/
 *.db
 *.sqlite3
+
+# Media & Demo Videos (hosted via Google Drive / CDN)
+*.mp4
+*.mov
+*.avi
+frontend/public/videos/
+frontend/landing-page/public/videos/
 
 # Node & Frontend
 node_modules/

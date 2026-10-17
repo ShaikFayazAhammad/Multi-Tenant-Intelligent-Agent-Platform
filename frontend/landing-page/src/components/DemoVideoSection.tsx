@@ -1,7 +1,34 @@
 import React, { useState } from 'react';
-import { Play, Video, ExternalLink, CheckCircle2, Shield, Sparkles, MessageSquare, Terminal, Eye } from 'lucide-react';
+import { Play, Video, ExternalLink, CheckCircle2, Shield, MessageSquare, Terminal, Eye } from 'lucide-react';
 import { VideoModal } from './VideoModal';
 import { PLATFORM_LINKS } from '../config/navigation';
+
+export const DEMO_VIDEOS = {
+  admin: {
+    title: 'Super Admin Portal Walkthrough',
+    subtitle: 'Multi-tenant provisioning, RAG crawler, tool encryption & playground simulator',
+    embedUrl: 'https://drive.google.com/file/d/1j--LmwBJ8U7G1D0oxwmnRJKRl7tYHD6f/preview',
+    driveUrl: 'https://drive.google.com/file/d/1j--LmwBJ8U7G1D0oxwmnRJKRl7tYHD6f/view?usp=sharing',
+    keyPoints: [
+      'Creating organizations and scoped project agent configurations',
+      'Uploading compliance documents and crawling websites into ChromaDB',
+      'Registering encrypted API tools with Fernet AES-256 keys',
+      'Testing agent execution with latency and RAG trace in the Playground',
+    ],
+  },
+  client: {
+    title: 'Client Operations & Voice Agent Experience',
+    subtitle: 'Real-time WebSocket streaming, browser speech recognition, and ElevenLabs TTS',
+    embedUrl: 'https://drive.google.com/file/d/14QePbIxVeWvioqqPQN8fl1H5QomDEOg7/preview',
+    driveUrl: 'https://drive.google.com/file/d/14QePbIxVeWvioqqPQN8fl1H5QomDEOg7/view?usp=sharing',
+    keyPoints: [
+      'Logging into client portal with role-based project selection',
+      'Testing conversational banking agent via real-time WebSocket token streaming',
+      'Voice interaction using Speech-to-Text and ElevenLabs TTS audio streaming',
+      'Viewing live analytics: resolution rate, latency, and sentiment escalations',
+    ],
+  },
+};
 
 export const DemoVideoSection: React.FC = () => {
   const [activeModal, setActiveModal] = useState<{
@@ -50,33 +77,33 @@ export const DemoVideoSection: React.FC = () => {
           </p>
         </div>
 
-        {/* 2 Showcase Blocks Grid */}
+        {/* 2-Column Video Cards Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
 
-          {/* BLOCK 1: Super Admin Portal Walkthrough */}
+          {/* BLOCK 1: Super Admin Walkthrough */}
           <div className="flex flex-col rounded-3xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/80 shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-blue-500/40 dark:hover:border-blue-500/40 group">
             
             {/* Top Video Container */}
             <div className="relative aspect-video bg-slate-950 overflow-hidden flex items-center justify-center">
               {/* Simulated UI background with cyber grid */}
               <div className="absolute inset-0 bg-gradient-to-tr from-slate-950 via-slate-900 to-indigo-950/80 opacity-90"></div>
-              <div className="absolute inset-0 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px] opacity-20"></div>
+              <div className="absolute inset-0 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:16px_16px] opacity-20"></div>
 
               {/* Graphical Preview Card */}
               <div className="relative z-10 w-4/5 p-5 rounded-2xl border border-slate-700/80 bg-slate-900/90 shadow-2xl backdrop-blur-md space-y-3">
                 <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                   <div className="flex items-center space-x-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
-                    <span className="text-xs font-mono font-bold text-white">ADMIN CONSOLE SIMULATOR</span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span className="text-xs font-mono font-bold text-white">ADMIN CONSOLE</span>
                   </div>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-900/60 text-cyan-300 border border-blue-700/40">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-950/80 text-blue-300 border border-blue-800/60">
                     PORT 3001
                   </span>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-300 font-mono">
+                <div className="grid grid-cols-2 gap-2 text-center font-mono text-xs">
                   <div className="p-2 rounded-lg bg-slate-800/80 border border-slate-700">
-                    <div className="text-slate-400 text-[9px]">TENANT PROVISIONING</div>
-                    <div className="text-white font-semibold">BFSI Global Bank</div>
+                    <div className="text-slate-400 text-[9px]">ENCRYPTED VAULT</div>
+                    <div className="text-emerald-400 font-semibold">AES-256 Active</div>
                   </div>
                   <div className="p-2 rounded-lg bg-slate-800/80 border border-slate-700">
                     <div className="text-slate-400 text-[9px]">RAG VECTOR CHUNKS</div>
@@ -89,15 +116,10 @@ export const DemoVideoSection: React.FC = () => {
               <button
                 onClick={() =>
                   openVideo(
-                    'Super Admin Portal Walkthrough',
-                    'Multi-tenant provisioning, RAG crawler, tool encryption & playground simulator',
-                    '/videos/admin-demo.mp4',
-                    [
-                      'Creating organizations and scoped project agent configurations',
-                      'Uploading compliance documents and crawling websites into ChromaDB',
-                      'Registering encrypted API tools with Fernet AES-256 keys',
-                      'Testing agent execution with latency and RAG trace in the Playground',
-                    ]
+                    DEMO_VIDEOS.admin.title,
+                    DEMO_VIDEOS.admin.subtitle,
+                    DEMO_VIDEOS.admin.embedUrl,
+                    DEMO_VIDEOS.admin.keyPoints
                   )
                 }
                 className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 group-hover:bg-black/25 transition-all duration-300 cursor-pointer"
@@ -111,7 +133,7 @@ export const DemoVideoSection: React.FC = () => {
               {/* Duration badge */}
               <div className="absolute bottom-3 right-3 z-20 px-2.5 py-1 rounded-md bg-black/75 backdrop-blur-md text-[11px] font-mono text-white flex items-center space-x-1.5">
                 <Video className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Admin Demo • 1080p</span>
+                <span>Admin Demo • Google Drive 1080p</span>
               </div>
             </div>
 
@@ -151,26 +173,33 @@ export const DemoVideoSection: React.FC = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                <button
-                  onClick={() =>
-                    openVideo(
-                      'Super Admin Portal Walkthrough',
-                      'Multi-tenant provisioning, RAG crawler, tool encryption & playground simulator',
-                      '/videos/admin-demo.mp4',
-                      [
-                        'Creating organizations and scoped project agent configurations',
-                        'Uploading compliance documents and crawling websites into ChromaDB',
-                        'Registering encrypted API tools with Fernet AES-256 keys',
-                        'Testing agent execution with latency and RAG trace in the Playground',
-                      ]
-                    )
-                  }
-                  className="inline-flex items-center space-x-2 text-sm font-bold text-blue-600 dark:text-cyan-400 hover:underline"
-                >
-                  <Eye className="w-4 h-4" />
-                  <span>Watch Walkthrough Video</span>
-                </button>
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center space-x-4">
+                  <button
+                    onClick={() =>
+                      openVideo(
+                        DEMO_VIDEOS.admin.title,
+                        DEMO_VIDEOS.admin.subtitle,
+                        DEMO_VIDEOS.admin.embedUrl,
+                        DEMO_VIDEOS.admin.keyPoints
+                      )
+                    }
+                    className="inline-flex items-center space-x-2 text-sm font-bold text-blue-600 dark:text-cyan-400 hover:underline cursor-pointer"
+                  >
+                    <Eye className="w-4 h-4" />
+                    <span>Watch Walkthrough Video</span>
+                  </button>
+
+                  <a
+                    href={DEMO_VIDEOS.admin.driveUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center space-x-1 text-xs text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-cyan-300 transition-colors"
+                  >
+                    <span>Drive</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
 
                 <a
                   href={PLATFORM_LINKS.adminPortal}
@@ -226,15 +255,10 @@ export const DemoVideoSection: React.FC = () => {
               <button
                 onClick={() =>
                   openVideo(
-                    'Client Operations & Voice Agent Experience',
-                    'Real-time WebSocket streaming, browser speech recognition, and ElevenLabs TTS',
-                    '/videos/client-demo.mp4',
-                    [
-                      'Logging into client portal with role-based project selection',
-                      'Testing conversational banking agent via real-time WebSocket token streaming',
-                      'Voice interaction using Speech-to-Text and ElevenLabs TTS audio streaming',
-                      'Viewing live analytics: resolution rate, latency, and sentiment escalations',
-                    ]
+                    DEMO_VIDEOS.client.title,
+                    DEMO_VIDEOS.client.subtitle,
+                    DEMO_VIDEOS.client.embedUrl,
+                    DEMO_VIDEOS.client.keyPoints
                   )
                 }
                 className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 group-hover:bg-black/25 transition-all duration-300 cursor-pointer"
@@ -248,7 +272,7 @@ export const DemoVideoSection: React.FC = () => {
               {/* Duration badge */}
               <div className="absolute bottom-3 right-3 z-20 px-2.5 py-1 rounded-md bg-black/75 backdrop-blur-md text-[11px] font-mono text-white flex items-center space-x-1.5">
                 <Video className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Client Demo • 1080p</span>
+                <span>Client Demo • Google Drive 1080p</span>
               </div>
             </div>
 
@@ -288,26 +312,33 @@ export const DemoVideoSection: React.FC = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                <button
-                  onClick={() =>
-                    openVideo(
-                      'Client Operations & Voice Agent Experience',
-                      'Real-time WebSocket streaming, browser speech recognition, and ElevenLabs TTS',
-                      '/videos/client-demo.mp4',
-                      [
-                        'Logging into client portal with role-based project selection',
-                        'Testing conversational banking agent via real-time WebSocket token streaming',
-                        'Voice interaction using Speech-to-Text and ElevenLabs TTS audio streaming',
-                        'Viewing live analytics: resolution rate, latency, and sentiment escalations',
-                      ]
-                    )
-                  }
-                  className="inline-flex items-center space-x-2 text-sm font-bold text-cyan-600 dark:text-cyan-400 hover:underline"
-                >
-                  <Eye className="w-4 h-4" />
-                  <span>Watch Client Demo Video</span>
-                </button>
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center space-x-4">
+                  <button
+                    onClick={() =>
+                      openVideo(
+                        DEMO_VIDEOS.client.title,
+                        DEMO_VIDEOS.client.subtitle,
+                        DEMO_VIDEOS.client.embedUrl,
+                        DEMO_VIDEOS.client.keyPoints
+                      )
+                    }
+                    className="inline-flex items-center space-x-2 text-sm font-bold text-cyan-600 dark:text-cyan-400 hover:underline cursor-pointer"
+                  >
+                    <Eye className="w-4 h-4" />
+                    <span>Watch Client Demo Video</span>
+                  </button>
+
+                  <a
+                    href={DEMO_VIDEOS.client.driveUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center space-x-1 text-xs text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors"
+                  >
+                    <span>Drive</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
 
                 <a
                   href={PLATFORM_LINKS.clientPortal}
@@ -329,10 +360,10 @@ export const DemoVideoSection: React.FC = () => {
         {/* Video Attachment Instructions Note */}
         <div className="mt-12 p-6 rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-slate-100/70 dark:bg-slate-900/40 text-center max-w-3xl mx-auto text-xs text-slate-600 dark:text-slate-400 space-y-1">
           <div className="font-semibold text-slate-800 dark:text-slate-200">
-            💡 Video Attachment Slots
+            🎬 Cloud Streamed HD Walkthroughs
           </div>
           <div>
-            Place your recorded MP4 walkthrough files at <code className="text-blue-600 dark:text-cyan-300 font-mono">public/videos/admin-demo.mp4</code> and <code className="text-blue-600 dark:text-cyan-300 font-mono">public/videos/client-demo.mp4</code>, or paste external video embed links.
+            Walkthrough demonstrations are streamed via high-definition Google Drive cloud embeds with full playback controls.
           </div>
         </div>
 

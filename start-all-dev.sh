@@ -32,9 +32,20 @@ sleep 2
 # Start Backend Services
 cd "$(dirname "$0")"
 
+# Ensure demo videos are linked in landing page public directory if present in frontend/public/videos
+mkdir -p frontend/landing-page/public/videos
+for vid in frontend/public/videos/*.mp4; do
+    if [ -f "$vid" ]; then
+        target="frontend/landing-page/public/videos/$(basename "$vid")"
+        if [ ! -f "$target" ]; then
+            ln "$vid" "$target" 2>/dev/null || cp "$vid" "$target" 2>/dev/null || true
+        fi
+    fi
+done
+
 # 1. Main Backend (FastAPI)
 echo "🤖 Starting Main Backend (Port 8000)..."
-(cd backend && source venv/bin/activate 2>/dev/null || true && python3 main.py) &
+(cd backend && (./venv/bin/python main.py || python3 main.py)) &
 BACKEND_PID=$!
 
 sleep 2
