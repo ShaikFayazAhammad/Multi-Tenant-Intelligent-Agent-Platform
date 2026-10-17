@@ -1,8 +1,11 @@
 import os
 import time
 import uuid
+import logging
 import httpx
 from typing import List, Optional
+
+logger = logging.getLogger(__name__)
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status
 from sqlalchemy.orm import Session
 from app.core.database import get_db
