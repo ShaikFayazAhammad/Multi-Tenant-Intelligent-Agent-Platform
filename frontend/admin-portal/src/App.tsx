@@ -12,6 +12,7 @@ import PromptConfigView from './views/PromptConfigView';
 import KnowledgeBaseView from './views/KnowledgeBaseView';
 import ApiVaultView from './views/ApiVaultView';
 import PlaygroundView from './views/PlaygroundView';
+import VisualBuilderView from './views/VisualBuilderView';
 
 // --- Toast Types ---
 type ToastType = 'success' | 'error' | 'info' | 'warn';
@@ -213,6 +214,20 @@ export default function App() {
             selectedProjectId={selectedProjectId}
           />
         );
+      case 'visual-builder':
+        return (
+          <VisualBuilderView
+            orgs={orgs}
+            selectedOrgId={selectedOrgId}
+            onOrgChange={handleOrgChange}
+            projects={projects}
+            selectedProjectId={selectedProjectId}
+            onProjectSelect={setSelectedProjectId}
+            onOrgsUpdate={loadOrgs}
+            onProjectsUpdate={loadProjects}
+            onMessage={handleMessage}
+          />
+        );
       case 'organizations':
         return (
           <OrganizationsView
@@ -275,21 +290,29 @@ export default function App() {
 
         {/* Main Workspace */}
         <div className="main-workspace">
-          {/* Top Header */}
-          <Header
-            orgs={orgs}
-            selectedOrgId={selectedOrgId}
-            onOrgChange={handleOrgChange}
-            projects={projects}
-            selectedProjectId={selectedProjectId}
-            onProjectChange={setSelectedProjectId}
-            onSignOut={handleSignOut}
-          />
+          {/* Top Header - hide for visual builder (it has its own toolbar) */}
+          {activeNav !== 'visual-builder' && (
+            <Header
+              orgs={orgs}
+              selectedOrgId={selectedOrgId}
+              onOrgChange={handleOrgChange}
+              projects={projects}
+              selectedProjectId={selectedProjectId}
+              onProjectChange={setSelectedProjectId}
+              onSignOut={handleSignOut}
+            />
+          )}
 
-          {/* Content */}
-          <div className="content-area">
-            {renderContent()}
-          </div>
+          {/* Content — visual builder fills the full area without padding */}
+          {activeNav === 'visual-builder' ? (
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              {renderContent()}
+            </div>
+          ) : (
+            <div className="content-area">
+              {renderContent()}
+            </div>
+          )}
         </div>
       </div>
 

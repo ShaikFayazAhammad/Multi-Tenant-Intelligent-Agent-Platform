@@ -8,6 +8,7 @@ interface SidebarProps {
 
 const navItems: { id: NavItem; icon: string; label: string; section?: string }[] = [
   { id: 'dashboard', icon: '📊', label: 'Dashboard', section: 'OVERVIEW' },
+  { id: 'visual-builder', icon: '🧩', label: 'Visual Builder', section: 'WORKFLOW STUDIO' },
   { id: 'organizations', icon: '🏢', label: 'Orgs & Credentials', section: 'MANAGEMENT' },
   { id: 'agents', icon: '🤖', label: 'Projects & Agents' },
   { id: 'prompt-config', icon: '✍️', label: 'Configure Prompt', section: 'CONFIGURATION' },

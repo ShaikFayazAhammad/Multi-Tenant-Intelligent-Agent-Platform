@@ -6,26 +6,34 @@
 
 A production-ready, multi-tenant SaaS platform engineered for **BFSI (Banking, Financial Services, and Insurance)** enterprises. It features strict tenant data isolation, config-driven agent orchestration via LangGraph, per-project RAG vector search (ChromaDB), OpenRouter multi-model LLM inference with automatic fallback, Fernet AES-256 encrypted API tool execution, automated two-pass guardrails (PII masking & disclaimers), real-time WebSocket streaming with token-chunked delivery, ElevenLabs text-to-speech, web crawler knowledge ingestion, an agent playground simulator, and dual role-tailored web interfaces.
 
+<p align="center">
+  <img src="docs/images/visual-workflow-builder.png" alt="BFSI Visual Workflow Builder Studio" width="100%" style="border-radius: 12px; box-shadow: 0 12px 36px rgba(0,0,0,0.6);" />
+</p>
+<p align="center">
+  <em>Visual Workflow Builder Studio — Drag-and-drop orchestration canvas with slide-in configuration drawer</em>
+</p>
+
 ---
 
 ## 📋 Table of Contents
 
 1. [Project Overview](#-project-overview)
-2. [Key Features](#-key-features)
-3. [Architecture Diagram](#-architecture-diagram)
-4. [Technology Stack](#-technology-stack)
-5. [Project & Directory Structure](#-project--directory-structure)
-6. [Prerequisites](#-prerequisites)
-7. [Environment Variables & Configuration](#-environment-variables--configuration)
-8. [Database Setup & Schema](#-database-setup--schema)
-9. [Installation & Quick Start](#-installation--quick-start)
-10. [Default Seed Credentials](#-default-seed-credentials)
-11. [API Endpoints Reference](#-api-endpoints-reference)
-12. [Database Schema Details](#-database-schema-details)
-13. [Testing Instructions](#-testing-instructions)
-14. [Build & Deployment](#-build--deployment)
-15. [Troubleshooting & Common Issues](#-troubleshooting--common-issues)
-16. [Important Notes & Assumptions](#-important-notes--assumptions)
+2. [Visual Workflow Builder Studio](#-visual-workflow-builder-studio)
+3. [Key Features](#-key-features)
+4. [Architecture Diagram](#-architecture-diagram)
+5. [Technology Stack](#-technology-stack)
+6. [Project & Directory Structure](#-project--directory-structure)
+7. [Prerequisites](#-prerequisites)
+8. [Environment Variables & Configuration](#-environment-variables--configuration)
+9. [Database Setup & Schema](#-database-setup--schema)
+10. [Installation & Quick Start](#-installation--quick-start)
+11. [Default Seed Credentials](#-default-seed-credentials)
+12. [API Endpoints Reference](#-api-endpoints-reference)
+13. [Database Schema Details](#-database-schema-details)
+14. [Testing Instructions](#-testing-instructions)
+15. [Build & Deployment](#-build--deployment)
+16. [Troubleshooting & Common Issues](#-troubleshooting--common-issues)
+17. [Important Notes & Assumptions](#-important-notes--assumptions)
 
 ---
 
@@ -46,10 +54,30 @@ User Query → Input Guardrail (PII mask, topic block)
 
 ---
 
+## 🧩 Visual Workflow Builder Studio
+
+The **Visual Workflow Builder** is an end-to-end administration studio integrated directly into the Super Admin Portal (`http://localhost:3001` → `🧩 Visual Builder`). Rather than jumping across disconnected management tables, administrators can design, wire, deploy, and verify the entire multi-tenant platform hierarchy visually on an interactive canvas.
+
+<p align="center">
+  <img src="docs/images/visual-workflow-builder.png" alt="BFSI Visual Workflow Builder Canvas and Inspector Drawer" width="100%" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" />
+</p>
+
+### Key Studio Capabilities:
+- **Compact Visual Graph Nodes**: Blocks on the canvas display clean, compact cards with live status badges (`🟢 Live` / `⚪ Draft` / `🟡 Paused`), domain identifiers, and animated SVG bezier connection wires.
+- **Slide-in Configuration Drawer**: Clicking any block or action button slides in a dedicated right-side inspector drawer on the same page, keeping the canvas visible while editing.
+- **Auto-Populate Live Hierarchy**: Automatically synthesizes and renders the active tenant topology (Organization → Projects → Agents → Prompts → RAG → Playground) on load.
+- **Organization & Credential Onboarding**: Create new organizations and onboard operator credentials (`super_admin`, `supervisor`, `lead`) with email and temporary passwords.
+- **Live Agent Lifecycle Control**: Switch agents instantly between `⚪ Draft` (staging only), `🟢 Live` (serving live client traffic), and `🟡 Paused` (maintenance mode).
+- **In-Canvas RAG Ingestion**: Upload `.pdf` and documents or trigger web crawling directly within the Knowledge Base drawer with real-time vector chunk counts.
+- **In-Canvas Agent Playground**: Run interactive simulation turns directly within the studio to inspect answers, latency, token consumption, and cited RAG passages.
+
+---
+
 ## ✨ Key Features
 
 | Feature | Description |
 | :--- | :--- |
+| **Visual Workflow Builder Studio** | Interactive drag-and-drop orchestration canvas with SVG bezier connection wires, compact cards, and slide-in right drawer for managing Organizations, Credentials, Projects, Agents (Draft / Live / Pause), Prompts & Guardrails, RAG (PDF upload & web crawling), API Vault, and Playground simulations. |
 | **Multi-Tenant Data Isolation** | Every relational entity and vector collection is scoped by `org_id` and `project_id` via JWT claims and FastAPI dependency injection. |
 | **Config-Driven Dynamic Orchestrator** | LangGraph agent graphs are constructed at runtime per session using project configs (system prompts, temperature, model, enabled tools, guardrails). |
 | **OpenRouter Multi-Model LLM** | Uses OpenRouter's OpenAI-compatible API with automatic fallback chain: `meta-llama/llama-3.1-8b-instruct` → `google/gemini-2.5-flash`. |

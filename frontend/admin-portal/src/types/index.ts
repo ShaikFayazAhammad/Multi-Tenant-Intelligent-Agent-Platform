@@ -9,6 +9,7 @@ export type Domain = 'banking' | 'finance' | 'insurance';
 export type UserRole = 'super_admin' | 'supervisor' | 'lead';
 export type NavItem =
   | 'dashboard'
+  | 'visual-builder'
   | 'organizations'
   | 'agents'
   | 'prompt-config'
@@ -153,4 +154,41 @@ export interface DomainTemplate {
   default_guardrails: Record<string, any>;
   default_agent_settings: Record<string, any>;
   default_voice_settings: Record<string, any>;
+}
+
+// --- Visual Workflow Studio ---
+export type WorkflowNodeType =
+  | 'org'
+  | 'project'
+  | 'agent'
+  | 'config'
+  | 'rag'
+  | 'api_vault'
+  | 'playground';
+
+export interface WorkflowNodeData {
+  id: string;
+  type: WorkflowNodeType;
+  title: string;
+  subtitle?: string;
+  entityId?: string;
+  status?: string;
+  details?: Record<string, any>;
+  collapsed?: boolean;
+}
+
+export interface WorkflowCanvasNode {
+  id: string;
+  type: WorkflowNodeType;
+  x: number;
+  y: number;
+  data: WorkflowNodeData;
+}
+
+export interface WorkflowCanvasEdge {
+  id: string;
+  source: string;
+  target: string;
+  label?: string;
+  animated?: boolean;
 }

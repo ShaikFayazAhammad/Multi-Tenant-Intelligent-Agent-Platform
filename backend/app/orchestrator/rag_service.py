@@ -154,10 +154,12 @@ class PerProjectRAGService:
         project_id: str,
         query: str,
         top_k: int = 3,
+        max_distance: Optional[float] = 1.8,
     ) -> List[Dict[str, Any]]:
         """
         Query isolated vector collection for given project ID.
         Returns top matching passages with distance score.
+        Filters out passages exceeding max_distance threshold.
         """
         if not query or not query.strip():
             return []
@@ -201,12 +203,15 @@ class PerProjectRAGService:
                 doc_ids = results["ids"][0] if results.get("ids") else [""] * len(docs)
 
                 for doc, meta, dist, d_id in zip(docs, metas, dists, doc_ids):
+                    score = round(float(dist), 4)
+                    if max_distance is not None and score > max_distance:
+                        continue
                     passages.append({
                         "id": d_id,
                         "text": doc,
                         "filename": (meta or {}).get("filename", "unknown"),
                         "source": (meta or {}).get("source", "upload"),
-                        "score": round(float(dist), 4),
+                        "score": score,
                     })
 
                 logger.info(
