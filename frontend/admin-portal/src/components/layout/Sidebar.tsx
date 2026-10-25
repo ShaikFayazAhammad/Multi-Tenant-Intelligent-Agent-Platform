@@ -19,6 +19,11 @@ import type { NavItem } from '../../types';
 interface SidebarProps {
   activeNav: NavItem;
   onNavChange: (item: NavItem) => void;
+  currentUser?: {
+    email?: string;
+    full_name?: string;
+    role?: string;
+  } | null;
 }
 
 const navItems: {
@@ -39,8 +44,19 @@ const navItems: {
   { id: 'playground', icon: PlaySquare, label: 'Playground', section: 'TESTING' },
 ];
 
-export default function Sidebar({ activeNav, onNavChange }: SidebarProps) {
+export default function Sidebar({ activeNav, onNavChange, currentUser }: SidebarProps) {
   const [collapsed, setCollapsed] = React.useState(false);
+
+  const userName = currentUser?.full_name || 'Super Admin';
+  const userEmail = currentUser?.email || 'admin@bfsi.com';
+  const initials =
+    userName
+      .split(' ')
+      .filter(Boolean)
+      .map((w) => w[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase() || 'SA';
 
   return (
     <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
@@ -87,7 +103,7 @@ export default function Sidebar({ activeNav, onNavChange }: SidebarProps) {
         })}
       </nav>
 
-      {/* Footer - Collapse Toggle & Super Admin Profile */}
+      {/* Footer - Collapse Toggle & Dynamic User Profile */}
       <div className="sidebar-footer">
         <button
           className="sidebar-collapse-btn"
@@ -100,14 +116,14 @@ export default function Sidebar({ activeNav, onNavChange }: SidebarProps) {
           </span>
         </button>
 
-        <div className="sidebar-user" title="Super Admin Account">
+        <div className="sidebar-user" title={`${userName} (${currentUser?.role || 'Admin'})`}>
           <div className="sidebar-avatar">
-            SA
+            {initials}
             <span className="sidebar-avatar-status" />
           </div>
           <div className="sidebar-user-info">
-            <div className="sidebar-user-name">Super Admin</div>
-            <div className="sidebar-user-role">admin@bfsi.com</div>
+            <div className="sidebar-user-name" title={userName}>{userName}</div>
+            <div className="sidebar-user-role" title={userEmail}>{userEmail}</div>
           </div>
         </div>
       </div>

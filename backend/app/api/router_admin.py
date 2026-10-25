@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Q
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.security import hash_password, encrypt_secret, decrypt_secret
-from app.api.dependencies import require_super_admin, TenantContext
+from app.api.dependencies import require_super_admin, TenantContext, get_tenant_context
 from app.models import Organization, User, Project, ProjectConfig, ApiIntegration, KnowledgeDoc
 from app.api.billing_guards import check_project_limit, check_integration_limit, check_knowledge_doc_limit
 from app.schemas.admin import (
@@ -91,8 +91,13 @@ def get_domain_templates(ctx: TenantContext = Depends(require_super_admin)):
 
 # --- ORGANIZATIONS MANAGEMENT ---
 @router.get("/orgs", response_model=List[OrgResponse])
-def list_organizations(db: Session = Depends(get_db), ctx: TenantContext = Depends(require_super_admin)):
-    orgs = db.query(Organization).all()
+def list_organizations(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
+    if ctx.is_super_admin() and not ctx.org_id:
+        orgs = db.query(Organization).all()
+    elif ctx.org_id:
+        orgs = db.query(Organization).filter(Organization.id == ctx.org_id).all()
+    else:
+        orgs = db.query(Organization).all()
     res = []
     for org in orgs:
         u_count = len(org.users)

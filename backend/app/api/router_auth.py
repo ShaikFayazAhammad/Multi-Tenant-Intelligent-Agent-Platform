@@ -19,17 +19,49 @@ def signup(req: SignupRequest, db: Session = Depends(get_db)):
             detail="A user with this email address already exists."
         )
 
-    # Validate org if provided
+    # Validate org if provided, or create a brand new isolated organization
     org_id = req.org_id
     if org_id:
         org = db.query(Organization).filter(Organization.id == org_id).first()
         if not org:
             raise HTTPException(status_code=404, detail="Organization not found")
     else:
-        # If no org provided and not super_admin, assign to default org if exists
-        default_org = db.query(Organization).first()
-        if default_org:
-            org_id = default_org.id
+        # Create a fresh tenant Organization with 0 projects and 0 agents on Free tier
+        import uuid
+        import re
+        from datetime import datetime, timedelta
+        from app.models.plan import Plan
+        from app.models.subscription import Subscription
+
+        org_name = (req.org_name or "").strip() or f"{req.full_name}'s Org"
+        slug_base = re.sub(r'[^a-z0-9]+', '-', org_name.lower()).strip('-') or "org"
+        slug = f"{slug_base}-{uuid.uuid4().hex[:6]}"
+
+        new_org = Organization(
+            id=str(uuid.uuid4()),
+            name=org_name,
+            slug=slug,
+            status="active"
+        )
+        db.add(new_org)
+        db.commit()
+        db.refresh(new_org)
+        org_id = new_org.id
+
+        # Auto-provision Free Plan Subscription for this new organization
+        free_plan = db.query(Plan).filter(Plan.name == "free").first()
+        if free_plan:
+            new_sub = Subscription(
+                id=str(uuid.uuid4()),
+                org_id=new_org.id,
+                plan_id=free_plan.id,
+                status="active",
+                billing_cycle="monthly",
+                current_period_start=datetime.utcnow(),
+                current_period_end=datetime.utcnow() + timedelta(days=3650),
+            )
+            db.add(new_sub)
+            db.commit()
 
     hashed = hash_password(req.password)
     new_user = User(
@@ -37,7 +69,7 @@ def signup(req: SignupRequest, db: Session = Depends(get_db)):
         password_hash=hashed,
         full_name=req.full_name,
         org_id=org_id,
-        role=req.role or "lead",
+        role=req.role or "super_admin",
         is_active=True
     )
     db.add(new_user)

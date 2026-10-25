@@ -33,6 +33,11 @@ interface BillingViewProps {
   selectedOrgId: string;
   onOrgChange: (orgId: string) => void;
   onMessage: (msg: string, type?: 'success' | 'error') => void;
+  currentUser?: {
+    email?: string;
+    full_name?: string;
+    role?: string;
+  } | null;
 }
 
 export default function BillingView({
@@ -40,6 +45,7 @@ export default function BillingView({
   selectedOrgId,
   onOrgChange,
   onMessage,
+  currentUser,
 }: BillingViewProps) {
   const [loading, setLoading] = useState(true);
   const [plans, setPlans] = useState<BillingPlan[]>([]);
@@ -138,8 +144,8 @@ export default function BillingView({
             }
           },
           prefill: {
-            name: 'Super Admin',
-            email: 'admin@bfsi.com',
+            name: currentUser?.full_name || 'Admin User',
+            email: currentUser?.email || 'admin@bfsi.com',
             contact: '9999999999',
           },
           theme: {
@@ -417,45 +423,40 @@ export default function BillingView({
                 <QuotaMeter
                   icon={Layers}
                   label="Active Projects"
-                  current={usage.projects.current}
-                  limit={usage.projects.limit}
-                  percent={usage.projects.percent}
+                  metric={usage.projects}
+                  defaultLimit={subData.subscription.plan?.max_projects ?? 1}
                 />
 
                 {/* Agents quota */}
                 <QuotaMeter
                   icon={Bot}
                   label="Active Agents / Configs"
-                  current={usage.agents.current}
-                  limit={usage.agents.limit}
-                  percent={usage.agents.percent}
+                  metric={usage.agents}
+                  defaultLimit={subData.subscription.plan?.max_agents ?? 1}
                 />
 
                 {/* Knowledge Docs quota */}
                 <QuotaMeter
                   icon={FileText}
                   label="Knowledge Base Documents"
-                  current={usage.knowledge_docs.current}
-                  limit={usage.knowledge_docs.limit}
-                  percent={usage.knowledge_docs.percent}
+                  metric={usage.knowledge_docs}
+                  defaultLimit={subData.subscription.plan?.max_knowledge_docs ?? 5}
                 />
 
                 {/* API Integrations */}
                 <QuotaMeter
                   icon={Key}
                   label="API Vault Integrations"
-                  current={usage.api_integrations.current}
-                  limit={usage.api_integrations.limit}
-                  percent={usage.api_integrations.percent}
+                  metric={usage.api_integrations}
+                  defaultLimit={subData.subscription.plan?.max_api_integrations ?? 1}
                 />
 
                 {/* Monthly Conversations */}
                 <QuotaMeter
                   icon={MessageSquare}
                   label="Conversations / Month"
-                  current={usage.conversations_this_month.current}
-                  limit={usage.conversations_this_month.limit}
-                  percent={usage.conversations_this_month.percent}
+                  metric={usage.conversations_this_month}
+                  defaultLimit={subData.subscription.plan?.max_conversations_per_month ?? 500}
                 />
               </div>
             )}
@@ -464,45 +465,50 @@ export default function BillingView({
       )}
 
       {/* Free tier limit reached banner */}
-      {currentPlanName === 'free' && usage && usage.projects.current >= usage.projects.limit && (
-        <div
-          style={{
-            background: 'linear-gradient(90deg, rgba(239, 68, 68, 0.15) 0%, rgba(245, 158, 11, 0.1) 100%)',
-            border: '1px solid rgba(239, 68, 68, 0.35)',
-            borderRadius: 12,
-            padding: '16px 20px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 16,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ color: '#ef4444', flexShrink: 0 }}>
-              <AlertCircle size={22} />
-            </div>
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#fee2e2' }}>
-                Free Tier Quota Limit Reached (1/1 Project Active)
-              </div>
-              <div style={{ fontSize: 12, color: '#fca5a5', marginTop: 2 }}>
-                Attempting to create another project or agent will be blocked by backend quota guards.
-                Upgrade to Pro (5 projects & 5 agents) using Razorpay test cards.
-              </div>
-            </div>
-          </div>
-          <button
-            className="btn btn-primary btn-sm"
-            style={{ whiteSpace: 'nowrap' }}
-            onClick={() => {
-              const pro = plans.find((p) => p.name === 'pro');
-              if (pro) handleInitiateUpgrade(pro);
+      {(() => {
+        const projCur = typeof usage?.projects === 'number' ? usage.projects : usage?.projects?.current ?? 0;
+        const projLim = usage?.projects?.limit ?? subData?.subscription?.plan?.max_projects ?? 1;
+        const isLimitReached = currentPlanName === 'free' && projLim > 0 && projCur >= projLim;
+        return isLimitReached ? (
+          <div
+            style={{
+              background: 'linear-gradient(90deg, rgba(239, 68, 68, 0.15) 0%, rgba(245, 158, 11, 0.1) 100%)',
+              border: '1px solid rgba(239, 68, 68, 0.35)',
+              borderRadius: 12,
+              padding: '16px 20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 16,
             }}
           >
-            Upgrade to Pro
-          </button>
-        </div>
-      )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ color: '#ef4444', flexShrink: 0 }}>
+                <AlertCircle size={22} />
+              </div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#fee2e2' }}>
+                  Free Tier Quota Limit Reached ({projCur}/{projLim} Active)
+                </div>
+                <div style={{ fontSize: 12, color: '#fca5a5', marginTop: 2 }}>
+                  Attempting to create another project or agent will be blocked by backend quota guards.
+                  Upgrade to Pro (5 projects & 5 agents) using Razorpay test cards.
+                </div>
+              </div>
+            </div>
+            <button
+              className="btn btn-primary btn-sm"
+              style={{ whiteSpace: 'nowrap' }}
+              onClick={() => {
+                const pro = plans.find((p) => p.name === 'pro');
+                if (pro) handleInitiateUpgrade(pro);
+              }}
+            >
+              Upgrade to Pro
+            </button>
+          </div>
+        ) : null;
+      })()}
 
       {/* Plan Catalog Grid Section */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 8 }}>
@@ -1048,17 +1054,53 @@ export default function BillingView({
 function QuotaMeter({
   icon: Icon,
   label,
-  current,
-  limit,
-  percent,
+  metric,
+  current: directCurrent,
+  limit: directLimit,
+  percent: directPercent,
+  defaultLimit = 1,
 }: {
   icon: any;
   label: string;
-  current: number;
-  limit: number;
-  percent: number;
+  metric?: { current?: number; limit?: number; percent?: number } | number;
+  current?: number;
+  limit?: number;
+  percent?: number;
+  defaultLimit?: number;
 }) {
+  const current =
+    directCurrent !== undefined
+      ? directCurrent
+      : typeof metric === 'object' && metric?.current !== undefined
+      ? metric.current
+      : typeof metric === 'number'
+      ? metric
+      : 0;
+
+  const rawLimit =
+    directLimit !== undefined
+      ? directLimit
+      : typeof metric === 'object' && metric?.limit !== undefined
+      ? metric.limit
+      : defaultLimit;
+
+  const limit = rawLimit !== undefined ? rawLimit : defaultLimit;
   const isUnlimited = limit === -1;
+
+  const calculatedPercent = isUnlimited
+    ? 0
+    : limit > 0
+    ? Math.round((current / limit) * 100)
+    : 0;
+
+  const rawPercent =
+    directPercent !== undefined
+      ? directPercent
+      : typeof metric === 'object' && metric?.percent !== undefined
+      ? metric.percent
+      : calculatedPercent;
+
+  const percent = isNaN(rawPercent) ? 0 : Math.max(0, Math.min(100, rawPercent));
   const isFull = !isUnlimited && current >= limit;
   const isWarning = !isUnlimited && percent >= 80 && !isFull;
 
@@ -1073,7 +1115,7 @@ function QuotaMeter({
         </div>
         <div style={{ fontWeight: 600, color: isFull ? '#ef4444' : 'var(--color-text-primary)', fontSize: 12 }}>
           {current} / {isUnlimited ? '∞ Unlimited' : limit}
-          {!isUnlimited && ` (${Math.min(100, percent)}%)`}
+          {!isUnlimited && ` (${percent}%)`}
         </div>
       </div>
 

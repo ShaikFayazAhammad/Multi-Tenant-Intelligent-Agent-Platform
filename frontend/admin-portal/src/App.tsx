@@ -14,6 +14,7 @@ import ApiVaultView from './views/ApiVaultView';
 import PlaygroundView from './views/PlaygroundView';
 import VisualBuilderView from './views/VisualBuilderView';
 import BillingView from './views/BillingView';
+import UpgradePlanModal from './components/modals/UpgradePlanModal';
 import { CheckCircle2, AlertCircle, AlertTriangle, Info, X } from 'lucide-react';
 
 // --- Toast Types ---
@@ -110,12 +111,12 @@ function ToastContainer({ toasts, onRemove }: { toasts: Toast[]; onRemove: (id: 
 }
 
 // --- Login Screen ---
-function LoginScreen({ onLogin }: { onLogin: (token: string) => void }) {
+function LoginScreen({ onLogin }: { onLogin: (token: string, user?: any) => void }) {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('admin@bfsi.com');
   const [password, setPassword] = useState('admin123');
-  const [fullName, setFullName] = useState('Super Admin');
-  const [role, setRole] = useState('super_admin');
+  const [fullName, setFullName] = useState('');
+  const [orgName, setOrgName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -128,21 +129,28 @@ function LoginScreen({ onLogin }: { onLogin: (token: string) => void }) {
 
     try {
       if (mode === 'signin') {
-        const data = await adminApi.login(email, password);
+        const data = await adminApi.login(email.trim(), password);
         localStorage.setItem('bfsi_admin_token', data.access_token);
-        onLogin(data.access_token);
+        if ((data as any).user) {
+          localStorage.setItem('bfsi_admin_user', JSON.stringify((data as any).user));
+        }
+        onLogin(data.access_token, (data as any).user);
       } else {
-        // Create new login
+        // Create new isolated tenant organization on Free Tier
         const data = await adminApi.signup({
-          email,
+          email: email.trim(),
           password,
-          full_name: fullName,
-          role,
+          full_name: fullName.trim(),
+          org_name: orgName.trim() || `${fullName.trim()}'s Org`,
+          role: 'super_admin',
         });
         localStorage.setItem('bfsi_admin_token', data.access_token);
-        setSuccessMsg('Account created successfully! Logging you in…');
+        if ((data as any).user) {
+          localStorage.setItem('bfsi_admin_user', JSON.stringify((data as any).user));
+        }
+        setSuccessMsg(`Welcome, ${fullName.trim()}! Free tier workspace provisioned.`);
         setTimeout(() => {
-          onLogin(data.access_token);
+          onLogin(data.access_token, (data as any).user);
         }, 600);
       }
     } catch (err: any) {
@@ -150,7 +158,7 @@ function LoginScreen({ onLogin }: { onLogin: (token: string) => void }) {
         err?.response?.data?.detail ||
           (mode === 'signin'
             ? 'Invalid credentials. Please try again.'
-            : 'Failed to create login account.')
+            : 'Failed to create account. Email may already exist.')
       );
     } finally {
       setLoading(false);
@@ -203,6 +211,8 @@ function LoginScreen({ onLogin }: { onLogin: (token: string) => void }) {
             type="button"
             onClick={() => {
               setMode('signin');
+              setEmail('admin@bfsi.com');
+              setPassword('admin123');
               setError('');
               setSuccessMsg('');
             }}
@@ -227,6 +237,8 @@ function LoginScreen({ onLogin }: { onLogin: (token: string) => void }) {
               setMode('signup');
               setEmail('');
               setPassword('');
+              setFullName('');
+              setOrgName('');
               setError('');
               setSuccessMsg('');
             }}
@@ -275,16 +287,15 @@ function LoginScreen({ onLogin }: { onLogin: (token: string) => void }) {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Role</label>
-                <select
+                <label className="form-label">Organization / Company Name</label>
+                <input
                   className="form-input"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                >
-                  <option value="super_admin">Super Admin (All Orgs & Plans)</option>
-                  <option value="supervisor">Supervisor</option>
-                  <option value="lead">Lead Operator</option>
-                </select>
+                  type="text"
+                  placeholder="e.g. Acme Financial Services"
+                  value={orgName}
+                  onChange={(e) => setOrgName(e.target.value)}
+                  required
+                />
               </div>
             </>
           )}
@@ -295,7 +306,7 @@ function LoginScreen({ onLogin }: { onLogin: (token: string) => void }) {
               className="form-input"
               type="email"
               value={email}
-              placeholder="admin@domain.com"
+              placeholder={mode === 'signup' ? 'admin@company.com' : 'admin@bfsi.com'}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
               required
@@ -315,15 +326,30 @@ function LoginScreen({ onLogin }: { onLogin: (token: string) => void }) {
             />
           </div>
 
+          {mode === 'signup' && (
+            <div
+              style={{
+                fontSize: 11,
+                color: '#818cf8',
+                background: 'rgba(99, 102, 241, 0.08)',
+                border: '1px solid rgba(99, 102, 241, 0.2)',
+                padding: '8px 12px',
+                borderRadius: 8,
+              }}
+            >
+              ✨ <strong>Free Tier Included:</strong> Fresh isolated organization with 1 Active Project, 1 Agent config, 5 Knowledge docs, and 500 conversations/mo.
+            </div>
+          )}
+
           <button type="submit" className="btn btn-primary btn-full btn-lg" disabled={loading} style={{ marginTop: 4 }}>
             {loading ? (
               <>
-                <div className="spinner" /> {mode === 'signin' ? 'Authenticating…' : 'Creating Account…'}
+                <div className="spinner" /> {mode === 'signin' ? 'Authenticating…' : 'Creating Free Workspace…'}
               </>
             ) : mode === 'signin' ? (
               'Sign In to Dashboard'
             ) : (
-              'Create Login & Continue'
+              'Create Free Workspace & Continue'
             )}
           </button>
         </form>
@@ -375,6 +401,15 @@ function LoginScreen({ onLogin }: { onLogin: (token: string) => void }) {
 // ============================================================
 export default function App() {
   const [token, setToken] = useState<string | null>(localStorage.getItem('bfsi_admin_token'));
+  const [currentUser, setCurrentUser] = useState<any>(() => {
+    const saved = localStorage.getItem('bfsi_admin_user');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {}
+    }
+    return null;
+  });
   const [activeNav, setActiveNav] = useState<NavItem>('dashboard');
 
   // Global data
@@ -383,13 +418,22 @@ export default function App() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState('');
 
-  // Toast
+  // Toast & Modals
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const toastCounter = React.useRef(0);
 
-  const addToast = useCallback((message: string, type: ToastType = 'info') => {
+  const addToast = useCallback((message: any, type: ToastType = 'info') => {
+    let msgStr = '';
+    if (typeof message === 'string') {
+      msgStr = message;
+    } else if (message && typeof message === 'object') {
+      msgStr = message.message || message.detail || JSON.stringify(message);
+    } else {
+      msgStr = String(message || '');
+    }
     const id = ++toastCounter.current;
-    setToasts((prev) => [...prev, { id, message, type }]);
+    setToasts((prev) => [...prev, { id, message: msgStr, type }]);
     setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 5000);
   }, []);
 
@@ -397,24 +441,40 @@ export default function App() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const handleMessage = useCallback((msg: string, type?: 'success' | 'error') => {
+  const handleMessage = useCallback((msg: any, type?: ToastType) => {
+    const isLimit =
+      (typeof msg === 'object' && (msg?.error === 'plan_limit_reached' || msg?.detail?.error === 'plan_limit_reached')) ||
+      (typeof msg === 'string' && (msg.toLowerCase().includes('limit reached') || msg.toLowerCase().includes('upgrade to add more') || msg.toLowerCase().includes('plan limit')));
+
+    if (isLimit) {
+      setUpgradeModalOpen(true);
+      return;
+    }
     addToast(msg, type || 'info');
   }, [addToast]);
 
-  // Load orgs on login
+  // Load orgs on login or token refresh
   const loadOrgs = useCallback(async () => {
     try {
       const data = await adminApi.getOrgs();
       setOrgs(data);
-      if (data.length > 0 && !selectedOrgId) {
-        setSelectedOrgId(data[0].id);
+      if (data.length > 0) {
+        setSelectedOrgId((prev) => (data.some((o) => o.id === prev) ? prev : data[0].id));
+      } else {
+        setSelectedOrgId('');
+        setProjects([]);
+        setSelectedProjectId('');
       }
     } catch { }
-  }, [selectedOrgId]);
+  }, []);
 
   // Load projects when org changes
   const loadProjects = useCallback(async (orgId: string) => {
-    if (!orgId) return;
+    if (!orgId) {
+      setProjects([]);
+      setSelectedProjectId('');
+      return;
+    }
     try {
       const data = await adminApi.getProjects(orgId);
       setProjects(data);
@@ -425,16 +485,60 @@ export default function App() {
       } else {
         setSelectedProjectId('');
       }
-    } catch { }
+    } catch {
+      setProjects([]);
+      setSelectedProjectId('');
+    }
   }, []);
 
-  useEffect(() => {
-    if (token) { loadOrgs(); }
-  }, [token]);
+  const handleLogin = (newToken: string, user?: any) => {
+    setToken(newToken);
+    if (user) {
+      setCurrentUser(user);
+    }
+    adminApi.getMe()
+      .then((u) => {
+        setCurrentUser(u);
+        localStorage.setItem('bfsi_admin_user', JSON.stringify(u));
+      })
+      .catch(() => {});
+  };
+
+  const handleSignOut = () => {
+    localStorage.removeItem('bfsi_admin_token');
+    localStorage.removeItem('bfsi_admin_user');
+    setToken(null);
+    setCurrentUser(null);
+    setOrgs([]);
+    setSelectedOrgId('');
+    setProjects([]);
+    setSelectedProjectId('');
+  };
 
   useEffect(() => {
-    if (selectedOrgId) loadProjects(selectedOrgId);
-  }, [selectedOrgId]);
+    if (token) {
+      adminApi.getMe()
+        .then((u) => {
+          setCurrentUser(u);
+          localStorage.setItem('bfsi_admin_user', JSON.stringify(u));
+        })
+        .catch((err) => {
+          if (err?.response?.status === 401) {
+            handleSignOut();
+          }
+        });
+      loadOrgs();
+    }
+  }, [token, loadOrgs]);
+
+  useEffect(() => {
+    if (selectedOrgId) {
+      loadProjects(selectedOrgId);
+    } else {
+      setProjects([]);
+      setSelectedProjectId('');
+    }
+  }, [selectedOrgId, loadProjects]);
 
   const handleOrgChange = (id: string) => {
     setSelectedOrgId(id);
@@ -442,16 +546,9 @@ export default function App() {
     setSelectedProjectId('');
   };
 
-  const handleSignOut = () => {
-    localStorage.removeItem('bfsi_admin_token');
-    setToken(null);
-    setOrgs([]);
-    setProjects([]);
-  };
-
   // Not logged in → show Login
   if (!token) {
-    return <LoginScreen onLogin={setToken} />;
+    return <LoginScreen onLogin={handleLogin} />;
   }
 
   const selectedProject = projects.find((p) => p.id === selectedProjectId);
@@ -500,6 +597,8 @@ export default function App() {
             onProjectSelect={setSelectedProjectId}
             onProjectsUpdate={loadProjects}
             onMessage={handleMessage}
+            onNavigateBilling={() => setActiveNav('billing')}
+            onOpenUpgradeModal={() => setUpgradeModalOpen(true)}
           />
         );
       case 'prompt-config':
@@ -537,6 +636,7 @@ export default function App() {
             selectedOrgId={selectedOrgId}
             onOrgChange={handleOrgChange}
             onMessage={handleMessage}
+            currentUser={currentUser}
           />
         );
       default:
@@ -547,8 +647,12 @@ export default function App() {
   return (
     <>
       <div className="app-layout">
-        {/* Left Sidebar */}
-        <Sidebar activeNav={activeNav} onNavChange={setActiveNav} />
+        {/* Left Sidebar with dynamic current user */}
+        <Sidebar
+          activeNav={activeNav}
+          onNavChange={setActiveNav}
+          currentUser={currentUser}
+        />
 
         {/* Main Workspace */}
         <div className="main-workspace">
@@ -580,6 +684,18 @@ export default function App() {
 
       {/* Toast Notifications */}
       <ToastContainer toasts={toasts} onRemove={removeToast} />
+
+      {/* Upgrade Plan Modal */}
+      <UpgradePlanModal
+        isOpen={upgradeModalOpen}
+        onClose={() => setUpgradeModalOpen(false)}
+        onSelectPlan={(plan) => {
+          setUpgradeModalOpen(false);
+          setActiveNav('billing');
+        }}
+        currentCount={projects.length}
+        limitCount={1}
+      />
     </>
   );
 }

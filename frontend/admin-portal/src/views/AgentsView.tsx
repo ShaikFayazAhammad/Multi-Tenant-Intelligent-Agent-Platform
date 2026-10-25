@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Sparkles, Zap } from 'lucide-react';
 import { adminApi } from '../services/api';
 import type { Organization, Project, AgentStatus } from '../types';
 
@@ -9,7 +10,9 @@ interface AgentsViewProps {
   selectedProjectId: string;
   onProjectSelect: (id: string) => void;
   onProjectsUpdate: (orgId: string) => void;
-  onMessage: (msg: string, type?: 'success' | 'error') => void;
+  onMessage: (msg: any, type?: 'success' | 'error' | 'warn' | 'info') => void;
+  onNavigateBilling?: () => void;
+  onOpenUpgradeModal?: () => void;
 }
 
 type Domain = 'banking' | 'finance' | 'insurance';
@@ -30,6 +33,7 @@ function StatusBadge({ status }: { status: string }) {
 export default function AgentsView({
   orgs, selectedOrgId, projects, selectedProjectId,
   onProjectSelect, onProjectsUpdate, onMessage,
+  onNavigateBilling, onOpenUpgradeModal,
 }: AgentsViewProps) {
   const [agentName, setAgentName] = useState('');
   const [domain, setDomain] = useState<Domain>('banking');
@@ -37,9 +41,24 @@ export default function AgentsView({
   const [creating, setCreating] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
+  const isAtLimit = projects.length >= 1;
+
   const handleCreateAgent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedOrgId || !agentName.trim()) return;
+
+    // Direct check: if at free tier limit, cleanly pop up the upgrade plan modal
+    if (isAtLimit) {
+      if (onOpenUpgradeModal) {
+        onOpenUpgradeModal();
+      } else if (onNavigateBilling) {
+        onNavigateBilling();
+      } else {
+        onMessage('Free tier limit reached (1/1 Agent). Please upgrade your plan in Plans & Billing.', 'warn');
+      }
+      return;
+    }
+
     setCreating(true);
     try {
       await adminApi.createProject(selectedOrgId, agentName.trim(), domain, domain, initialStatus);
@@ -47,7 +66,26 @@ export default function AgentsView({
       onProjectsUpdate(selectedOrgId);
       onMessage(`✅ Agent "${agentName}" created as ${initialStatus}`, 'success');
     } catch (err: any) {
-      onMessage(err?.response?.data?.detail || 'Failed to create agent', 'error');
+      const status = err?.response?.status;
+      const detail = err?.response?.data?.detail;
+      const isLimit =
+        status === 402 ||
+        detail?.error === 'plan_limit_reached' ||
+        (typeof detail === 'string' && detail.toLowerCase().includes('limit')) ||
+        (typeof detail?.message === 'string' && detail.message.toLowerCase().includes('limit'));
+
+      if (isLimit) {
+        if (onOpenUpgradeModal) {
+          onOpenUpgradeModal();
+        } else if (onNavigateBilling) {
+          onNavigateBilling();
+        } else {
+          onMessage('Plan quota limit reached. Please upgrade to Pro in Plans & Billing.', 'warn');
+        }
+      } else {
+        const errorText = typeof detail === 'string' ? detail : detail?.message || 'Failed to create agent';
+        onMessage(errorText, 'error');
+      }
     } finally {
       setCreating(false);
     }
@@ -99,6 +137,43 @@ export default function AgentsView({
               </strong>
             </div>
           </div>
+
+          {isAtLimit && (
+            <div
+              style={{
+                background: 'linear-gradient(90deg, rgba(239, 68, 68, 0.12) 0%, rgba(99, 102, 241, 0.12) 100%)',
+                border: '1px solid rgba(239, 68, 68, 0.35)',
+                borderRadius: 10,
+                padding: '12px 14px',
+                marginBottom: 16,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 12,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <Zap size={18} color="#f87171" style={{ flexShrink: 0 }} />
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#fca5a5' }}>
+                    Free Tier Quota Limit ({projects.length}/1 Active Agent)
+                  </div>
+                  <div style={{ fontSize: 11, color: '#e2e8f0', marginTop: 2 }}>
+                    Upgrade to Pro tier to deploy up to 5 intelligent agents.
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6 }}
+                onClick={() => (onOpenUpgradeModal ? onOpenUpgradeModal() : onNavigateBilling ? onNavigateBilling() : null)}
+              >
+                <Sparkles size={13} /> Upgrade Plan
+              </button>
+            </div>
+          )}
+
           <form onSubmit={handleCreateAgent} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div className="form-group">
               <label className="form-label">Agent Name</label>
@@ -153,8 +228,17 @@ export default function AgentsView({
               type="submit"
               className="btn btn-primary btn-full"
               disabled={creating || !selectedOrgId}
+              style={isAtLimit ? { background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)' } : undefined}
             >
-              {creating ? <><div className="spinner" /> Creating Agent…</> : '🤖 Deploy Agent'}
+              {creating ? (
+                <><div className="spinner" /> Creating Agent…</>
+              ) : isAtLimit ? (
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                  <Sparkles size={15} /> Upgrade Plan to Deploy More Agents
+                </span>
+              ) : (
+                '🤖 Deploy Agent'
+              )}
             </button>
           </form>
         </div>

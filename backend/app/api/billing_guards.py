@@ -180,12 +180,22 @@ def check_conversation_quota(org_id: str, db: Session) -> None:
 # ─── Usage summary helper (used by billing endpoint) ─────────────────────────
 
 def get_org_usage(org_id: str, db: Session) -> dict:
-    """Return current resource usage counts for an org."""
+    """Return current resource usage and quota percentage for an org."""
     from datetime import datetime
     from app.models.project_config import ProjectConfig
+    from app.models.subscription import Subscription
 
     now = datetime.utcnow()
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    sub = db.query(Subscription).filter(Subscription.org_id == org_id).first()
+    plan = sub.plan if sub and sub.plan else None
+
+    max_p = plan.max_projects if plan else 1
+    max_a = plan.max_agents if plan else 1
+    max_k = plan.max_knowledge_docs if plan else 5
+    max_i = plan.max_api_integrations if plan else 1
+    max_c = plan.max_conversations_per_month if plan else 500
 
     projects = db.query(Project).filter(
         Project.org_id == org_id,
@@ -214,10 +224,14 @@ def get_org_usage(org_id: str, db: Session) -> dict:
         Conversation.created_at >= month_start
     ).count()
 
+    def _metric(curr: int, limit: int):
+        pct = 0 if limit <= 0 else round((curr / limit) * 100)
+        return {"current": curr, "limit": limit, "percent": pct}
+
     return {
-        "projects": projects,
-        "agents": agents,
-        "api_integrations": integrations,
-        "knowledge_docs": knowledge_docs,
-        "conversations_this_month": conversations_this_month,
+        "projects": _metric(projects, max_p),
+        "agents": _metric(agents, max_a),
+        "api_integrations": _metric(integrations, max_i),
+        "knowledge_docs": _metric(knowledge_docs, max_k),
+        "conversations_this_month": _metric(conversations_this_month, max_c),
     }

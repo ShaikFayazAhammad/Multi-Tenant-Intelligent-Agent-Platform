@@ -63,18 +63,18 @@ def _get_razorpay_client():
 
 def _resolve_org_id(req_org_id: Optional[str], ctx: TenantContext, db: Session) -> str:
     """Resolve target org_id for super_admins or standard org users."""
-    if ctx.role == "super_admin":
+    if ctx.org_id:
+        # User belongs to a specific tenant organization
+        return ctx.org_id
+    if ctx.is_super_admin():
+        # Global super admin (org_id is None) can switch between orgs
         if req_org_id:
             return req_org_id
-        if ctx.org_id:
-            return ctx.org_id
         first_org = db.query(Organization).first()
         if first_org:
             return first_org.id
         raise HTTPException(status_code=400, detail="No organization exists to manage billing.")
-    if not ctx.org_id:
-        raise HTTPException(status_code=400, detail="User account is not linked to an organization.")
-    return ctx.org_id
+    raise HTTPException(status_code=400, detail="User account is not linked to an organization.")
 
 
 # ─── Plan limits lookup ───────────────────────────────────────────────────────

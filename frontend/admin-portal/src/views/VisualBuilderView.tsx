@@ -338,7 +338,9 @@ function ProjectDrawerForm({ node, onMessage, orgs, onProjectsUpdate }: {
       onProjectsUpdate(selectedOrg);
       onMessage(`✅ Project "${created.name}" created as Draft`, 'success');
     } catch (err: any) {
-      onMessage(err?.response?.data?.detail || 'Failed to create project', 'error');
+      const detail = err?.response?.data?.detail;
+      const msg = typeof detail === 'string' ? detail : detail?.message || 'Failed to create project';
+      onMessage(msg, 'error');
     } finally { setLoading(false); }
   };
 

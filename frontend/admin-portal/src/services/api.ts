@@ -39,6 +39,7 @@ export const adminApi = {
     full_name: string;
     role?: string;
     org_id?: string;
+    org_name?: string;
   }): Promise<{ access_token: string }> => {
     const res = await api.post('/auth/signup', data);
     return res.data;

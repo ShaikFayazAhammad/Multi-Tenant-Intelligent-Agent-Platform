@@ -10,7 +10,8 @@ class SignupRequest(BaseModel):
     password: str
     full_name: str
     org_id: Optional[str] = None
-    role: Optional[str] = "lead" # super_admin, supervisor, lead
+    org_name: Optional[str] = None
+    role: Optional[str] = "super_admin" # super_admin, supervisor, lead
 
 class UserResponse(BaseModel):
     id: str
