@@ -298,6 +298,24 @@ Accepts a real HubSpot Private App Token (`pat-na1-...`) or `pat-demo-hubspot-sa
 }
 ```
 
+### Disconnect HubSpot Account
+Disconnects HubSpot, clears stored encrypted credentials, and resets status to `unconfigured`.
+- **Method**: `POST /api/admin/hubspot/disconnect?project_id={project_id}`
+- **Response (200 OK)**:
+```json
+{
+  "status": "unconfigured",
+  "message": "HubSpot integration disconnected successfully. You can now connect a new Live PAT or Sandbox token.",
+  "project_id": "22222222-2222-2222-2222-222222222222"
+}
+```
+
+### Direct HubSpot OAuth 2.0 Authorization Flow
+- **Config Endpoint**: `GET /api/admin/hubspot/oauth/config?project_id={project_id}`
+  - Returns `configured: true` with direct `authorize_url` (or instructions if `HUBSPOT_CLIENT_ID` is unset).
+- **Callback Endpoint**: `GET /api/admin/hubspot/oauth/callback?code={code}&state={project_id}`
+  - Exchanges authorization code for access tokens, saves token encrypted, and responds with an HTML popup closer that notifies parent window via `postMessage({ type: 'HUBSPOT_AUTH_SUCCESS' })`.
+
 ### Search Contacts
 - **Method**: `GET /api/admin/hubspot/contacts?project_id={id}&q=John`
 - **Response (200 OK)**:

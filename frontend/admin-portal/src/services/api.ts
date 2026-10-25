@@ -153,6 +153,14 @@ export const adminApi = {
     const res = await api.get('/admin/hubspot/contacts', { params: { project_id: projectId, q } });
     return res.data;
   },
+  disconnectHubSpot: async (projectId: string) => {
+    const res = await api.post('/admin/hubspot/disconnect', null, { params: { project_id: projectId } });
+    return res.data;
+  },
+  getHubSpotOAuthConfig: async (projectId: string): Promise<{ configured: boolean; authorize_url: string | null; message?: string }> => {
+    const res = await api.get('/admin/hubspot/oauth/config', { params: { project_id: projectId } });
+    return res.data;
+  },
 
   // ----- Knowledge Base -----
   getKbDocs: async (projectId: string): Promise<KnowledgeDoc[]> => {

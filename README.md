@@ -476,8 +476,11 @@ POST /api/auth/login
 #### HubSpot CRM Integration (`/api/admin/hubspot`)
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `GET` | `/api/admin/hubspot/status?project_id={id}` | Check HubSpot connection state |
+| `GET` | `/api/admin/hubspot/status?project_id={id}` | Check HubSpot connection state & sandbox/live mode |
 | `POST` | `/api/admin/hubspot/connect` | Connect Private App Token / Demo Sandbox token |
+| `POST` | `/api/admin/hubspot/disconnect?project_id={id}` | Disconnect and clear stored credentials |
+| `GET` | `/api/admin/hubspot/oauth/config?project_id={id}` | Get direct 1-click browser OAuth popup configuration |
+| `GET` | `/api/admin/hubspot/oauth/callback?code={code}&state={id}` | OAuth 2.0 exchange callback |
 | `GET` | `/api/admin/hubspot/contacts?project_id={id}&q=` | Search HubSpot CRM contacts |
 | `GET` | `/api/admin/hubspot/contacts/{id}?project_id={id}` | Get contact by ID |
 | `POST` | `/api/admin/hubspot/contacts` | Create new contact |

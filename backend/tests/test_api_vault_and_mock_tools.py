@@ -190,3 +190,41 @@ def test_hubspot_demo_sandbox_in_playground():
     assert tc[0]["status"] == "success"
     assert tc[0]["status_code"] == 200
     assert "John" in str(tc[0]["result"])
+
+
+def test_hubspot_disconnect_and_oauth_config():
+    headers = get_auth_headers()
+    project_id = "22222222-2222-2222-2222-222222222222"
+
+    # 1. Connect with sandbox token
+    conn_resp = client.post(
+        "/api/admin/hubspot/connect",
+        json={"project_id": project_id, "private_app_token": "pat-demo-hubspot-sandbox"},
+        headers=headers,
+    )
+    assert conn_resp.status_code == 200
+
+    # 2. Check status indicates sandbox
+    status_resp = client.get(f"/api/admin/hubspot/status?project_id={project_id}", headers=headers)
+    assert status_resp.status_code == 200
+    status_data = status_resp.json()
+    assert status_data["status"] == "connected"
+    assert status_data["is_sandbox"] is True
+    assert status_data["mode"] == "sandbox"
+
+    # 3. Disconnect HubSpot
+    dc_resp = client.post(f"/api/admin/hubspot/disconnect?project_id={project_id}", headers=headers)
+    assert dc_resp.status_code == 200
+    assert dc_resp.json()["status"] == "unconfigured"
+
+    # 4. Check status is now unconfigured
+    status_resp2 = client.get(f"/api/admin/hubspot/status?project_id={project_id}", headers=headers)
+    assert status_resp2.status_code == 200
+    assert status_resp2.json()["status"] == "unconfigured"
+
+    # 5. Check oauth config endpoint
+    oauth_resp = client.get(f"/api/admin/hubspot/oauth/config?project_id={project_id}", headers=headers)
+    assert oauth_resp.status_code == 200
+    oauth_data = oauth_resp.json()
+    assert "configured" in oauth_data
+

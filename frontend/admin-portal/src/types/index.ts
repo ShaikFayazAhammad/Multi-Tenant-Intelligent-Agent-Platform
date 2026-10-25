@@ -186,6 +186,8 @@ export interface HubSpotStatus {
   message: string;
   project_id: string;
   integration_id?: string;
+  is_sandbox?: boolean;
+  mode?: 'sandbox' | 'live' | 'unconfigured';
 }
 
 // --- User ---

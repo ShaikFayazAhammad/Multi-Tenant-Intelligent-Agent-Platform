@@ -8,9 +8,11 @@ Mount prefix: /api/admin/hubspot
 Docs: https://developers.hubspot.com/
 """
 
+import os
 import logging
 from typing import Optional, List, Dict, Any
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 import httpx
@@ -25,6 +27,9 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/admin/hubspot", tags=["HubSpot CRM Integration"])
 
 HUBSPOT_BASE = "https://api.hubapi.com"
+HUBSPOT_CLIENT_ID = os.environ.get("HUBSPOT_CLIENT_ID", "")
+HUBSPOT_CLIENT_SECRET = os.environ.get("HUBSPOT_CLIENT_SECRET", "")
+HUBSPOT_REDIRECT_URI = os.environ.get("HUBSPOT_REDIRECT_URI", "http://localhost:8000/api/admin/hubspot/oauth/callback")
 
 # ─────────────────────────────────────────────
 # Helper: find HubSpot integration for a project
@@ -133,21 +138,159 @@ async def hubspot_status(
 ) -> dict:
     """
     Check if HubSpot credentials are configured for this project.
-    Returns status=connected|unconfigured — does NOT make a live API call for status check.
+    Returns status=connected|unconfigured, mode=sandbox|live, and is_sandbox flag.
     """
     integration = _find_hubspot_integration(db, project_id)
     if not integration or not integration.encrypted_secret:
         return {
             "status": "unconfigured",
+            "is_sandbox": False,
+            "mode": "unconfigured",
             "message": "No HubSpot credentials configured. Use POST /connect to add your Private App Token.",
             "project_id": project_id,
         }
+    token = decrypt_secret(integration.encrypted_secret) or ""
+    is_sandbox = token.startswith("pat-demo") or "demo" in token.lower() or "sandbox" in token.lower()
     return {
         "status": "connected",
-        "message": "HubSpot Private App Token is stored (encrypted). Use /contacts or /tasks endpoints.",
+        "is_sandbox": is_sandbox,
+        "mode": "sandbox" if is_sandbox else "live",
+        "message": "Connected via Demo Sandbox Token." if is_sandbox else "Connected via Live Private App Token (PAT).",
         "project_id": project_id,
         "integration_id": integration.id,
     }
+
+
+@router.post("/disconnect", summary="Disconnect HubSpot integration")
+async def hubspot_disconnect(
+    project_id: str = Query(..., description="Project ID to disconnect HubSpot for"),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(require_super_admin),
+) -> dict:
+    """
+    Disconnect HubSpot by clearing stored encrypted credentials and disabling the integration.
+    Allows user to switch from sandbox demo to live PAT or another account.
+    """
+    integration = _find_hubspot_integration(db, project_id)
+    if integration:
+        integration.encrypted_secret = None
+        integration.is_enabled = False
+        db.commit()
+    return {
+        "status": "unconfigured",
+        "message": "HubSpot integration disconnected successfully. You can now connect a new Live PAT or Sandbox token.",
+        "project_id": project_id,
+    }
+
+
+@router.get("/oauth/config", summary="Get HubSpot OAuth 2.0 direct authorization configuration")
+async def hubspot_oauth_config(
+    project_id: str = Query(...),
+    ctx: TenantContext = Depends(require_super_admin),
+) -> dict:
+    """
+    Returns OAuth 2.0 direct authorization URL if HUBSPOT_CLIENT_ID is configured in backend/.env,
+    or instructions to enable 1-click popup authorization.
+    """
+    if HUBSPOT_CLIENT_ID:
+        scopes = "crm.objects.contacts.read%20crm.objects.contacts.write%20crm.objects.custom.read"
+        auth_url = (
+            f"https://app.hubspot.com/oauth/authorize"
+            f"?client_id={HUBSPOT_CLIENT_ID}"
+            f"&redirect_uri={HUBSPOT_REDIRECT_URI}"
+            f"&scope={scopes}"
+            f"&state={project_id}"
+        )
+        return {
+            "configured": True,
+            "authorize_url": auth_url,
+            "redirect_uri": HUBSPOT_REDIRECT_URI,
+        }
+    return {
+        "configured": False,
+        "authorize_url": None,
+        "message": "To enable 1-click direct browser authorization popup, add HUBSPOT_CLIENT_ID and HUBSPOT_CLIENT_SECRET to backend/.env."
+    }
+
+
+@router.get("/oauth/callback", summary="HubSpot OAuth 2.0 direct authorization callback")
+async def hubspot_oauth_callback(
+    code: str = Query(...),
+    state: str = Query(..., description="project_id"),
+    db: Session = Depends(get_db),
+):
+    """
+    Exchanges authorization code for HubSpot access & refresh tokens,
+    encrypts the token into ApiIntegration, and completes authorization.
+    """
+    if not HUBSPOT_CLIENT_ID or not HUBSPOT_CLIENT_SECRET:
+        raise HTTPException(status_code=400, detail="HubSpot OAuth credentials not configured.")
+
+    token_url = f"{HUBSPOT_BASE}/oauth/v1/token"
+    data = {
+        "grant_type": "authorization_code",
+        "client_id": HUBSPOT_CLIENT_ID,
+        "client_secret": HUBSPOT_CLIENT_SECRET,
+        "redirect_uri": HUBSPOT_REDIRECT_URI,
+        "code": code,
+    }
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        resp = await client.post(token_url, data=data)
+        if not resp.is_success:
+            raise HTTPException(status_code=400, detail=f"HubSpot OAuth exchange failed: {resp.text}")
+        token_data = resp.json()
+
+    access_token = token_data.get("access_token")
+    if not access_token:
+        raise HTTPException(status_code=400, detail="No access token received from HubSpot.")
+
+    project = db.query(Project).filter(Project.id == state).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    encrypted_token = encrypt_secret(access_token)
+    existing = _find_hubspot_integration(db, state)
+    if existing:
+        existing.encrypted_secret = encrypted_token
+        existing.is_enabled = True
+    else:
+        integration = ApiIntegration(
+            org_id=project.org_id,
+            project_id=state,
+            name="HubSpot CRM",
+            base_url=HUBSPOT_BASE,
+            auth_type="bearer",
+            encrypted_secret=encrypted_token,
+            is_enabled=True,
+            endpoints=[
+                {"name": "search_contacts", "method": "POST", "path": "/crm/v3/objects/contacts/search", "description": "Search HubSpot contacts"},
+                {"name": "get_contact", "method": "GET", "path": "/crm/v3/objects/contacts/{{contact_id}}", "description": "Get contact by ID"},
+                {"name": "create_contact", "method": "POST", "path": "/crm/v3/objects/contacts", "description": "Create new contact"},
+                {"name": "create_task", "method": "POST", "path": "/crm/v3/objects/tasks", "description": "Create follow-up task"}
+            ]
+        )
+        db.add(integration)
+    db.commit()
+
+    return HTMLResponse(
+        content="""
+        <html>
+        <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;text-align:center;padding:60px 20px;background:#0f172a;color:#f8fafc;">
+            <div style="font-size:48px;margin-bottom:16px;">🎉</div>
+            <h2 style="color:#10b981;margin-bottom:8px;">HubSpot Connected Successfully!</h2>
+            <p style="color:#94a3b8;font-size:14px;">Your HubSpot authorization is complete and credentials are encrypted.</p>
+            <script>
+                if (window.opener) {
+                    window.opener.postMessage({ type: 'HUBSPOT_AUTH_SUCCESS' }, '*');
+                    setTimeout(function() { window.close(); }, 1200);
+                } else {
+                    window.location.href = '/';
+                }
+            </script>
+        </body>
+        </html>
+        """
+    )
 
 
 @router.post("/connect", summary="Connect HubSpot account (store PAT encrypted)")

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { adminApi } from '../services/api';
-import type { ApiIntegration, Project, CurlParseResult, ToolAssignment } from '../types';
+import type { ApiIntegration, Project, CurlParseResult, ToolAssignment, HubSpotStatus } from '../types';
 
 interface ApiVaultViewProps {
   selectedProject: Project | undefined;
@@ -308,13 +308,20 @@ function MarketplacePanel({
   const [hubspotToken, setHubspotToken] = useState('');
   const [showHubSpotForm, setShowHubSpotForm] = useState(false);
   const [connectingHubSpot, setConnectingHubSpot] = useState(false);
-  const [hubspotStatus, setHubspotStatus] = useState<'connected' | 'unconfigured' | null>(null);
+  const [disconnectingHubSpot, setDisconnectingHubSpot] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState(false);
+  const [oauthHelpModal, setOauthHelpModal] = useState<string | null>(null);
+  const [hubspotInfo, setHubspotInfo] = useState<HubSpotStatus | null>(null);
+
+  const fetchHubSpotStatus = useCallback(() => {
+    adminApi.getHubSpotStatus(projectId)
+      .then(s => setHubspotInfo(s))
+      .catch(() => setHubspotInfo({ status: 'unconfigured', message: 'Unconfigured', project_id: projectId, mode: 'unconfigured' }));
+  }, [projectId]);
 
   useEffect(() => {
-    adminApi.getHubSpotStatus(projectId)
-      .then(s => setHubspotStatus(s.status))
-      .catch(() => setHubspotStatus('unconfigured'));
-  }, [projectId]);
+    fetchHubSpotStatus();
+  }, [fetchHubSpotStatus]);
 
   const handleInstallMock = async () => {
     setInstallingMock(true);
@@ -333,6 +340,7 @@ function MarketplacePanel({
       const result = await adminApi.installHubSpotIntegration(projectId);
       onMessage(`✅ ${result.message}`, 'success');
       onRefresh();
+      fetchHubSpotStatus();
     } catch (err: any) {
       onMessage(err?.response?.data?.detail || 'HubSpot install failed', 'error');
     } finally { setInstallingHubSpot(false); }
@@ -343,14 +351,69 @@ function MarketplacePanel({
     setConnectingHubSpot(true);
     try {
       const result = await adminApi.connectHubSpot(projectId, hubspotToken.trim());
-      setHubspotStatus('connected');
       setShowHubSpotForm(false);
       setHubspotToken('');
       onMessage(`✅ ${result.message}`, 'success');
+      fetchHubSpotStatus();
       onRefresh();
     } catch (err: any) {
       onMessage(err?.response?.data?.detail || 'HubSpot connection failed', 'error');
     } finally { setConnectingHubSpot(false); }
+  };
+
+  const handleDisconnectHubSpot = async () => {
+    if (!window.confirm('Disconnect HubSpot from this project? This will remove the saved credentials and deactivate HubSpot tools.')) {
+      return;
+    }
+    setDisconnectingHubSpot(true);
+    try {
+      const res = await adminApi.disconnectHubSpot(projectId);
+      onMessage(`✅ ${res.message || 'HubSpot disconnected successfully'}`, 'success');
+      setShowHubSpotForm(false);
+      fetchHubSpotStatus();
+      onRefresh();
+    } catch (err: any) {
+      onMessage(err?.response?.data?.detail || 'Failed to disconnect HubSpot', 'error');
+    } finally {
+      setDisconnectingHubSpot(false);
+    }
+  };
+
+  const handleOAuthConnect = async () => {
+    setOauthLoading(true);
+    try {
+      const config = await adminApi.getHubSpotOAuthConfig(projectId);
+      if (config.configured && config.authorize_url) {
+        const width = 620;
+        const height = 750;
+        const left = window.screenX + (window.outerWidth - width) / 2;
+        const top = window.screenY + (window.outerHeight - height) / 2;
+        window.open(
+          config.authorize_url,
+          'HubSpot_OAuth_Authorize',
+          `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no`
+        );
+
+        const handleMsg = (event: MessageEvent) => {
+          if (event.data?.type === 'HUBSPOT_AUTH_SUCCESS') {
+            window.removeEventListener('message', handleMsg);
+            onMessage('🎉 HubSpot connected successfully via direct OAuth authorization!', 'success');
+            fetchHubSpotStatus();
+            onRefresh();
+          }
+        };
+        window.addEventListener('message', handleMsg);
+      } else {
+        setOauthHelpModal(
+          config.message ||
+          'To enable 1-click HubSpot authorization popup, add HUBSPOT_CLIENT_ID and HUBSPOT_CLIENT_SECRET to backend/.env. Alternatively, connect immediately with a Private App Token (PAT) or Demo Sandbox Token below.'
+        );
+      }
+    } catch (err: any) {
+      onMessage(err?.response?.data?.detail || 'Failed to initialize HubSpot OAuth', 'error');
+    } finally {
+      setOauthLoading(false);
+    }
   };
 
   const cards = [
@@ -379,40 +442,150 @@ function MarketplacePanel({
       id: 'hubspot',
       icon: '🟠',
       label: 'HubSpot CRM',
-      badge: hubspotStatus === 'connected' ? 'LIVE' : 'UNCONFIGURED',
-      badgeColor: hubspotStatus === 'connected' ? 'emerald' : 'rose',
+      badge: hubspotInfo?.status === 'connected'
+        ? (hubspotInfo?.is_sandbox ? 'SANDBOX (DEMO)' : 'LIVE PAT')
+        : 'UNCONFIGURED',
+      badgeColor: hubspotInfo?.status === 'connected'
+        ? (hubspotInfo?.is_sandbox ? 'amber' : 'emerald')
+        : 'rose',
       description: 'Contacts · Tasks · Search',
       tools: ['Search Contacts', 'Get Contact by ID', 'Create Contact', 'Create Follow-up Task'],
-      note: hubspotStatus === 'connected'
-        ? '🟢 Connected via Private App Token (PAT)'
-        : 'Requires a HubSpot Private App Token. Real API calls — no mock data.',
-      status: hubspotStatus,
+      note: hubspotInfo?.status === 'connected'
+        ? (hubspotInfo?.is_sandbox
+          ? '🟡 Connected with Demo Sandbox Token (mock responses for testing without a live account).'
+          : '🟢 Connected via Live Private App Token (PAT) with active HubSpot API access.')
+        : 'Connect via HubSpot OAuth, Live Private App Token (PAT), or instant Demo Sandbox Token.',
+      status: hubspotInfo?.status || 'unconfigured',
       action: (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <button
-            className="btn"
-            style={{
-              background: hubspotStatus === 'connected' ? 'linear-gradient(135deg,#10b981,#059669)' : 'linear-gradient(135deg,#ff7a59,#c05200)',
-              color: 'white', width: '100%',
-            }}
-            disabled={installingHubSpot}
-            onClick={handleInstallHubSpot}
-          >
-            {installingHubSpot ? <><div className="spinner" /> Registering…</> : '📦 Register HubSpot Tools'}
-          </button>
-          {hubspotStatus !== 'connected' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {/* Action Buttons Row */}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <button
-              className="btn btn-secondary"
-              style={{ width: '100%' }}
-              onClick={() => setShowHubSpotForm(v => !v)}
+              className="btn"
+              style={{
+                flex: 1,
+                minWidth: 160,
+                background: hubspotInfo?.status === 'connected'
+                  ? (hubspotInfo?.is_sandbox ? 'linear-gradient(135deg,#f59e0b,#d97706)' : 'linear-gradient(135deg,#10b981,#059669)')
+                  : 'linear-gradient(135deg,#ff7a59,#c05200)',
+                color: 'white',
+              }}
+              disabled={installingHubSpot}
+              onClick={handleInstallHubSpot}
             >
-              {showHubSpotForm ? '✕ Cancel' : '🔑 Connect with Token'}
+              {installingHubSpot ? <><div className="spinner" /> Registering…</> : '📦 Register HubSpot Tools'}
             </button>
+
+            {hubspotInfo?.status === 'connected' ? (
+              <>
+                <button
+                  className="btn btn-secondary"
+                  style={{ flex: 1, minWidth: 150 }}
+                  onClick={() => setShowHubSpotForm(v => !v)}
+                >
+                  {showHubSpotForm
+                    ? '✕ Close Token Form'
+                    : (hubspotInfo.is_sandbox ? '🔑 Switch to Live PAT' : '🔄 Update PAT Token')}
+                </button>
+                <button
+                  className="btn"
+                  style={{
+                    background: 'rgba(239, 68, 68, 0.15)',
+                    color: '#f87171',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    padding: '8px 14px',
+                  }}
+                  disabled={disconnectingHubSpot}
+                  onClick={handleDisconnectHubSpot}
+                  title="Disconnect and clear token"
+                >
+                  {disconnectingHubSpot ? <div className="spinner" /> : (hubspotInfo.is_sandbox ? '✕ Disconnect Sandbox' : '✕ Disconnect')}
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  className="btn btn-secondary"
+                  style={{ flex: 1, minWidth: 140 }}
+                  onClick={() => setShowHubSpotForm(v => !v)}
+                >
+                  {showHubSpotForm ? '✕ Close' : '🔑 Connect with PAT Token'}
+                </button>
+                <button
+                  className="btn"
+                  style={{
+                    background: 'linear-gradient(135deg, #ff7a59, #e05b38)',
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    padding: '8px 14px',
+                  }}
+                  disabled={oauthLoading}
+                  onClick={handleOAuthConnect}
+                  title="Direct 1-click HubSpot authorization popup"
+                >
+                  {oauthLoading ? <div className="spinner" /> : '🔗 Direct HubSpot Connect'}
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Direct OAuth Setup Helper / Modal */}
+          {oauthHelpModal && (
+            <div style={{
+              padding: 12,
+              borderRadius: 8,
+              background: 'rgba(255, 122, 89, 0.12)',
+              border: '1px solid rgba(255, 122, 89, 0.35)',
+              fontSize: 12,
+              color: '#f8fafc',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <strong style={{ color: '#ff7a59' }}>⚙️ Direct HubSpot 1-Click OAuth Setup</strong>
+                <button
+                  onClick={() => setOauthHelpModal(null)}
+                  style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 14 }}
+                >
+                  ✕
+                </button>
+              </div>
+              <div style={{ lineHeight: 1.5, color: '#cbd5e1' }}>
+                To enable the direct <strong>"Connect with HubSpot"</strong> browser authorization button:
+                <ol style={{ margin: '6px 0 0 16px', padding: 0 }}>
+                  <li>Go to <a href="https://developers.hubspot.com/" target="_blank" rel="noreferrer" style={{ color: '#38bdf8' }}>HubSpot Developer Portal</a> → Create an App.</li>
+                  <li>Set Redirect URL: <code style={{ color: '#fbbf24', background: 'rgba(0,0,0,0.3)', padding: '1px 5px', borderRadius: 4 }}>http://localhost:8000/api/admin/hubspot/oauth/callback</code></li>
+                  <li>Add <code style={{ color: '#a5b4fc' }}>HUBSPOT_CLIENT_ID</code> and <code style={{ color: '#a5b4fc' }}>HUBSPOT_CLIENT_SECRET</code> to <code style={{ color: '#a5b4fc' }}>backend/.env</code>.</li>
+                </ol>
+                Once set, clicking <strong>Direct HubSpot Connect</strong> immediately opens HubSpot&apos;s login consent screen and completes the connection automatically!
+              </div>
+              <div style={{ fontSize: 11, color: '#94a3b8' }}>
+                👉 In the meantime, you can connect in 1 second using your <strong>Private App Token</strong> or <strong>Demo Sandbox Token</strong> below.
+              </div>
+            </div>
           )}
+
+          {/* Token Connection Form */}
           {showHubSpotForm && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 12, background: 'rgba(0,0,0,0.2)', borderRadius: 10 }}>
-              <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>
-                Create a <strong>Private App</strong> in HubSpot Settings → Integrations → Private Apps. Copy the token below.
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 10,
+              padding: 14,
+              background: 'rgba(0,0,0,0.25)',
+              borderRadius: 10,
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#f8fafc' }}>
+                {hubspotInfo?.status === 'connected' && hubspotInfo?.is_sandbox
+                  ? '🔑 Enter Live HubSpot Private App Token (PAT)'
+                  : '🔑 Connect HubSpot with Private App Token'}
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--color-text-muted)', lineHeight: 1.5 }}>
+                Create a <strong>Private App</strong> in HubSpot: <strong>⚙️ Settings → Integrations → Private Apps → Create a private app</strong>. Give it <code style={{ color: '#a5b4fc' }}>crm.objects.contacts.read</code> &amp; <code style={{ color: '#a5b4fc' }}>crm.objects.contacts.write</code> scopes.
               </div>
               <input
                 className="form-input"
@@ -422,27 +595,29 @@ function MarketplacePanel({
                 onChange={e => setHubspotToken(e.target.value)}
                 style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11 }}
               />
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    style={{ fontSize: 11, background: 'rgba(251,191,36,0.12)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.3)' }}
+                    onClick={() => setHubspotToken('pat-demo-hubspot-sandbox')}
+                  >
+                    ⚡ Use Demo Sandbox Token
+                  </button>
+                  <span style={{ fontSize: 10, color: 'var(--color-text-muted)' }}>
+                    (Instant test without HubSpot account)
+                  </span>
+                </div>
                 <button
-                  type="button"
-                  className="btn btn-secondary btn-sm"
-                  style={{ fontSize: 11, background: 'rgba(255,255,255,0.08)' }}
-                  onClick={() => setHubspotToken('pat-demo-hubspot-sandbox')}
+                  className="btn"
+                  style={{ background: 'linear-gradient(135deg,#ff7a59,#c05200)', color: 'white' }}
+                  disabled={!hubspotToken.trim() || connectingHubSpot}
+                  onClick={handleConnectHubSpot}
                 >
-                  ⚡ Use Demo Sandbox Token
+                  {connectingHubSpot ? <><div className="spinner" /> Validating &amp; Connecting…</> : '🔗 Validate &amp; Connect'}
                 </button>
-                <span style={{ fontSize: 10, color: 'var(--color-text-muted)' }}>
-                  (Instant connection without HubSpot Super Admin)
-                </span>
               </div>
-              <button
-                className="btn"
-                style={{ background: 'linear-gradient(135deg,#ff7a59,#c05200)', color: 'white' }}
-                disabled={!hubspotToken.trim() || connectingHubSpot}
-                onClick={handleConnectHubSpot}
-              >
-                {connectingHubSpot ? <><div className="spinner" /> Validating &amp; Connecting…</> : '🔗 Validate &amp; Connect'}
-              </button>
             </div>
           )}
         </div>
