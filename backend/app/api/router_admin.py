@@ -110,6 +110,13 @@ def list_organizations(db: Session = Depends(get_db), ctx: TenantContext = Depen
 
 @router.post("/orgs", response_model=OrgResponse)
 def create_organization(req: OrgCreate, db: Session = Depends(get_db), ctx: TenantContext = Depends(require_super_admin)):
+    # Only platform-level super admins (org_id is None) can create organizations.
+    # Tenant admins are scoped to their own org and cannot create additional orgs.
+    if ctx.org_id is not None:
+        raise HTTPException(
+            status_code=403,
+            detail="Only platform super admins can create new organizations. Tenant admins may only manage projects within their own organization."
+        )
     import uuid
     from datetime import datetime, timedelta
     from app.models.plan import Plan

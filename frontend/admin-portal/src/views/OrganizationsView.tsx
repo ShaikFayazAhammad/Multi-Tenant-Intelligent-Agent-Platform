@@ -1,23 +1,25 @@
 import React, { useState } from 'react';
 import { adminApi } from '../services/api';
 import type { Organization } from '../types';
+import { ShieldCheck, Building2, Users, FolderOpen, Layers, Lock } from 'lucide-react';
 
 interface OrganizationsViewProps {
   orgs: Organization[];
   selectedOrgId: string;
   onOrgsUpdate: (selectOrgId?: string) => void;
   onMessage: (msg: string, type?: 'success' | 'error') => void;
+  isSuperAdmin?: boolean;
 }
 
 export default function OrganizationsView({
-  orgs, selectedOrgId, onOrgsUpdate, onMessage
+  orgs, selectedOrgId, onOrgsUpdate, onMessage, isSuperAdmin = false,
 }: OrganizationsViewProps) {
-  // Org creation
+  // Org creation state (super admin only)
   const [orgName, setOrgName] = useState('');
   const [orgSlug, setOrgSlug] = useState('');
   const [orgLoading, setOrgLoading] = useState(false);
 
-  // User creation
+  // User creation state
   const [userEmail, setUserEmail] = useState('');
   const [userPassword, setUserPassword] = useState('');
   const [userFullName, setUserFullName] = useState('');
@@ -32,7 +34,7 @@ export default function OrganizationsView({
       const created = await adminApi.createOrg(orgName.trim(), orgSlug.trim());
       setOrgName(''); setOrgSlug('');
       onOrgsUpdate(created.id);
-      onMessage(`✅ Organization "${orgName}" created successfully and selected!`, 'success');
+      onMessage(`✅ Organization "${orgName}" created and selected!`, 'success');
     } catch (err: any) {
       onMessage(err?.response?.data?.detail || 'Failed to create organization', 'error');
     } finally {
@@ -62,12 +64,216 @@ export default function OrganizationsView({
 
   const selectedOrg = orgs.find((o) => o.id === selectedOrgId);
 
+  // ─────────────────────────────────────────────────────────────
+  // TENANT ADMIN VIEW: Shows their single org summary card
+  // ─────────────────────────────────────────────────────────────
+  if (!isSuperAdmin) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+        {/* Header */}
+        <div className="section-header">
+          <div>
+            <div className="section-title">Your Organization</div>
+            <div className="section-subtitle">Manage your tenant workspace, users, and access</div>
+          </div>
+          <span className="badge badge-indigo" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <ShieldCheck size={12} /> Tenant Workspace
+          </span>
+        </div>
+
+        {/* Org Summary Card */}
+        {selectedOrg ? (
+          <div
+            style={{
+              background: 'linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(14,165,233,0.05) 100%)',
+              border: '1px solid rgba(99,102,241,0.25)',
+              borderRadius: 16,
+              padding: 24,
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 20,
+            }}
+          >
+            <div
+              style={{
+                width: 52,
+                height: 52,
+                borderRadius: 14,
+                background: 'linear-gradient(135deg, #6366f1 0%, #0ea5e9 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 22,
+                flexShrink: 0,
+              }}
+            >
+              🏢
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--color-text-primary)', marginBottom: 4 }}>
+                {selectedOrg.name}
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--color-text-muted)', fontFamily: 'JetBrains Mono, monospace', marginBottom: 14 }}>
+                /{selectedOrg.slug}
+              </div>
+              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
+                  <FolderOpen size={14} color="#6366f1" />
+                  <span style={{ color: 'var(--color-text-secondary)' }}>
+                    <strong style={{ color: 'var(--color-text-primary)' }}>{selectedOrg.project_count ?? 0}</strong> Projects
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
+                  <Users size={14} color="#10b981" />
+                  <span style={{ color: 'var(--color-text-secondary)' }}>
+                    <strong style={{ color: 'var(--color-text-primary)' }}>{selectedOrg.user_count ?? 0}</strong> Users
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
+                  <Layers size={14} color="#f59e0b" />
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 700,
+                      padding: '2px 8px',
+                      borderRadius: 6,
+                      background: selectedOrg.status === 'active' ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)',
+                      color: selectedOrg.status === 'active' ? '#10b981' : '#f59e0b',
+                    }}
+                  >
+                    {selectedOrg.status?.toUpperCase()}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '6px 12px',
+                borderRadius: 8,
+                background: 'rgba(99,102,241,0.1)',
+                border: '1px solid rgba(99,102,241,0.2)',
+                fontSize: 11,
+                color: '#818cf8',
+                fontWeight: 600,
+              }}
+            >
+              <Lock size={12} />
+              Your Workspace
+            </div>
+          </div>
+        ) : (
+          <div className="empty-state">
+            <div className="empty-state-icon">🏢</div>
+            <div className="empty-state-title">No organization found</div>
+            <div className="empty-state-desc">Contact your platform administrator</div>
+          </div>
+        )}
+
+        {/* Info Banner */}
+        <div
+          style={{
+            padding: '14px 18px',
+            borderRadius: 12,
+            background: 'rgba(99,102,241,0.06)',
+            border: '1px solid rgba(99,102,241,0.15)',
+            fontSize: 12,
+            color: 'var(--color-text-muted)',
+            lineHeight: 1.7,
+          }}
+        >
+          💡 <strong style={{ color: 'var(--color-text-secondary)' }}>Your workspace is ready.</strong> You can create multiple projects under your organization from the <strong style={{ color: '#818cf8' }}>Projects & Agents</strong> section. Each project supports its own AI agent configuration, knowledge base, and billing quota.
+          <br />
+          Use the <strong style={{ color: '#818cf8' }}>Billing</strong> section to track your usage and upgrade your plan when needed.
+        </div>
+
+        {/* Onboard User */}
+        <div className="grid-2">
+          <div className="card">
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span>👤</span> Onboard Team Member
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 4 }}>
+                Add users to <strong style={{ color: 'var(--color-text-accent)' }}>{selectedOrg?.name}</strong>
+              </div>
+            </div>
+            <form onSubmit={handleCreateUser} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div className="form-group">
+                <label className="form-label">Full Name</label>
+                <input className="form-input" type="text" placeholder="e.g. Rahul Sharma" value={userFullName} onChange={(e) => setUserFullName(e.target.value)} required />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Email Address</label>
+                <input className="form-input" type="email" placeholder="user@yourcompany.com" value={userEmail} onChange={(e) => setUserEmail(e.target.value)} required />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Temporary Password</label>
+                <input className="form-input" type="password" placeholder="Minimum 8 characters" value={userPassword} onChange={(e) => setUserPassword(e.target.value)} required />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Access Role</label>
+                <select className="form-select" value={userRole} onChange={(e) => setUserRole(e.target.value)}>
+                  <option value="supervisor">🔷 Supervisor — All org agents & analytics</option>
+                  <option value="lead">🔹 Lead Operator — Assigned agents only</option>
+                </select>
+              </div>
+              <button type="submit" className="btn btn-primary btn-full" disabled={userLoading || !selectedOrgId}>
+                {userLoading ? <><div className="spinner" /> Adding Member…</> : '👤 Add Team Member'}
+              </button>
+            </form>
+          </div>
+
+          {/* Role Reference */}
+          <div className="card">
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-primary)' }}>Role Permissions</div>
+              <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 4 }}>Access levels within your workspace</div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {[
+                {
+                  role: '👑 Org Admin (You)', color: '#6366f1',
+                  perms: ['Full workspace access', 'Create & manage projects', 'Manage team members', 'Billing & plan upgrades'],
+                },
+                {
+                  role: '🔷 Supervisor', color: '#0ea5e9',
+                  perms: ['View all projects & agents', 'Read analytics & logs', 'No configuration access'],
+                },
+                {
+                  role: '🔹 Lead Operator', color: '#10b981',
+                  perms: ['Assigned agents only', 'Handle escalations', 'View limited analytics'],
+                },
+              ].map(({ role, color, perms }) => (
+                <div key={role} style={{ padding: '12px 14px', borderRadius: 10, background: `${color}0d`, border: `1px solid ${color}33` }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color, marginBottom: 8 }}>{role}</div>
+                  <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {perms.map((p) => (
+                      <li key={p} style={{ fontSize: 11, color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ color, fontSize: 8 }}>●</span>{p}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // PLATFORM SUPER ADMIN VIEW: Full org management
+  // ─────────────────────────────────────────────────────────────
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <div className="section-header">
         <div>
           <div className="section-title">Organizations & Credentials</div>
-          <div className="section-subtitle">Manage tenant organizations and onboard client users</div>
+          <div className="section-subtitle">Manage all tenant organizations and onboard users</div>
         </div>
         <div className="badge badge-indigo">{orgs.length} Organizations</div>
       </div>
@@ -119,7 +325,7 @@ export default function OrganizationsView({
         <div className="card">
           <div style={{ marginBottom: 16 }}>
             <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-primary)' }}>Registered Organizations</div>
-            <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 4 }}>All tenant organizations on this platform</div>
+            <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 4 }}>All tenant organizations on the platform</div>
           </div>
           {orgs.length === 0 ? (
             <div className="empty-state">
@@ -128,7 +334,7 @@ export default function OrganizationsView({
               <div className="empty-state-desc">Create your first organization to get started</div>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 320, overflowY: 'auto' }}>
               {orgs.map((org) => (
                 <div key={org.id} style={{
                   padding: '12px 14px', borderRadius: 12,
@@ -205,7 +411,7 @@ export default function OrganizationsView({
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {[
               {
-                role: '👑 Super Admin', color: '#6366f1',
+                role: '👑 Platform Super Admin', color: '#6366f1',
                 perms: ['Full platform access', 'Manage all organizations', 'Create & delete agents', 'Access audit logs & analytics', 'Configure all settings'],
               },
               {

@@ -412,6 +412,10 @@ export default function App() {
   });
   const [activeNav, setActiveNav] = useState<NavItem>('dashboard');
 
+  // Platform-level super admin: role=super_admin with NO org_id (like admin@bfsi.com)
+  // Tenant admin: has an org_id assigned (created at signup)
+  const isSuperAdmin = currentUser?.role === 'super_admin' && !currentUser?.org_id;
+
   // Global data
   const [orgs, setOrgs] = useState<Organization[]>([]);
   const [selectedOrgId, setSelectedOrgId] = useState('');
@@ -589,6 +593,7 @@ export default function App() {
             selectedOrgId={selectedOrgId}
             onOrgsUpdate={loadOrgs}
             onMessage={handleMessage}
+            isSuperAdmin={isSuperAdmin}
           />
         );
       case 'agents':
@@ -670,6 +675,7 @@ export default function App() {
               selectedProjectId={selectedProjectId}
               onProjectChange={setSelectedProjectId}
               onSignOut={handleSignOut}
+              isSuperAdmin={isSuperAdmin}
             />
           )}
 
