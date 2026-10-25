@@ -6,6 +6,7 @@ import { DemoVideoSection } from './components/DemoVideoSection';
 import { WorkflowSection } from './components/WorkflowSection';
 import { FeatureGrid } from './components/FeatureGrid';
 import { ArchitectureSection } from './components/ArchitectureSection';
+import { PricingSection } from './components/PricingSection';
 import { CreatorsSection } from './components/CreatorsSection';
 import { Footer } from './components/Footer';
 
@@ -33,7 +34,10 @@ export default function App() {
           {/* 5. Runtime Execution Pipeline & Swagger Docs */}
           <ArchitectureSection />
 
-          {/* 6. Co-Creators & Engineering Attribution (Rakesh Rohan & Shaik Fayaz Ahammad) */}
+          {/* 6. Pricing Plans & Billing */}
+          <PricingSection />
+
+          {/* 7. Co-Creators & Engineering Attribution (Rakesh Rohan & Shaik Fayaz Ahammad) */}
           <CreatorsSection />
         </main>
 

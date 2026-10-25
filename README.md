@@ -88,9 +88,11 @@ The **Visual Workflow Builder** is an end-to-end administration studio integrate
 | **Two-Pass Guardrail Engine** | **Pass 1 (Input):** PII masking (credit cards, SSNs, emails, phone numbers), blocked topic detection. **Pass 2 (Output):** Output PII sanitization, mandatory disclaimer injection, negative-sentiment escalation triggers. |
 | **Agent Lifecycle Management** | Three-state lifecycle (`Live` / `Paused` / `Draft`). Only Live agents respond to client queries; Paused/Draft agents return a status notice. Playground bypasses lifecycle gates. |
 | **Agent Playground Simulator** | Full-stack simulation endpoint for admins: runs input guardrails → RAG → tool triggers → LLM → output guardrails with complete observability (latency, tokens, model, passages, flags). |
+| **Multi-Tier Billing & Subscriptions** | 4-Tier SaaS monetization system (**Free**, **Pro**, **Ultra Pro**, **Enterprise**) with automated backend quota enforcement guards on projects, agents, documents, and integrations. Integrated with **Razorpay** checkout (test cards & production HMAC SHA-256 verification). |
+| **Admin Setup & Fast Onboarding** | Dual-tab login and self-serve admin registration form (`POST /api/auth/signup` and protected `/api/admin/setup`) supporting rapid tenant operator provisioning. |
 | **Real-Time Token Streaming** | Real-time token streaming over WebSocket (`MESSAGE_STREAM` / `MESSAGE_COMPLETE`) and HTTP Server-Sent Events (`POST /api/client/chat/stream`). Zero artificial buffering or fake delays. |
 | **ElevenLabs Text-to-Speech** | Voice input triggers TTS audio generation via ElevenLabs API, base64-encoded and streamed back over WebSocket (`AUDIO_STREAM`). |
-| **Multi-Portal Experience** | **Flagship Landing Page** (Port `3002` / `http://localhost:3002`): modern dark/light mode home screen, interactive video demo showcases, and direct portal navigation. **Super Admin Portal** (Port `3001` / `http://localhost:3001`): tenant, user, project, template, integration, KB, and guardrail management. **Client Operations Portal** (Port `3000` / `http://localhost:3000`): role-scoped dashboards, real-time WebSocket chat, conversation history, and voice AI. |
+| **Multi-Portal Experience** | **Flagship Landing Page** (Port `3002` / `http://localhost:3002`): modern dark/light mode home screen, live 4-tier pricing catalog, and demo showcases. **Super Admin Portal** (Port `3001` / `http://localhost:3001`): tenant, user, project, visual studio, Plans & Billing console, and guardrails. **Client Operations Portal** (Port `3000` / `http://localhost:3000`): role-scoped dashboards, real-time WebSocket chat, conversation history, and voice AI. |
 | **Immutable Audit Logs** | Security audit trail capturing all administrative events, scoped by organization. |
 
 ---
@@ -516,6 +518,22 @@ POST /api/auth/login
 | :--- | :--- | :--- |
 | `POST` | `/api/admin/projects/{project_id}/playground-test` | Full agent simulation with rich tool telemetry & observability |
 
+#### Billing & Subscriptions (`/api/billing`)
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/billing/plans` | List 4 plan tiers (Free, Pro, Ultra Pro, Enterprise) |
+| `GET` | `/api/billing/subscription` | Fetch org active subscription and real-time quota usage |
+| `POST` | `/api/billing/create-order` | Create Razorpay order for tier upgrade (`plan_name`, `billing_cycle`) |
+| `POST` | `/api/billing/verify-payment` | Verify HMAC SHA-256 signature and activate upgraded plan |
+| `POST` | `/api/billing/cancel` | Cancel subscription or revert to Free tier |
+| `GET` | `/api/billing/invoices` | Transaction audit history with payment IDs & dates |
+| `POST` | `/api/billing/webhook` | Razorpay subscription webhook handler |
+
+#### Admin Setup (`/api/admin/setup`)
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/admin/setup` | One-time super admin account creation (guarded by `ADMIN_SETUP_SECRET`) |
+
 ---
 
 ### 3. Client Operations (`/api/client`) — Requires Authentication
@@ -605,11 +623,11 @@ POST /api/client/chat
 
 ## 📊 Database Schema Details
 
-The platform uses **9 core relational tables**:
+The platform uses **12 core relational tables**:
 
 | # | Table | Description |
 | :--- | :--- | :--- |
-| 1 | `organizations` | Root multi-tenant entity with slug identifier |
+| 1 | `organizations` | Root multi-tenant entity with slug identifier and `plan_override` flag |
 | 2 | `users` | System users with role enforcement (`super_admin`, `supervisor`, `lead`) |
 | 3 | `projects` | AI agent projects scoped to `org_id` with lifecycle state (`Live`/`Paused`/`Draft`) |
 | 4 | `project_configs` | One-to-one extension storing system prompts, guardrails, agent settings, voice settings |
@@ -618,6 +636,9 @@ The platform uses **9 core relational tables**:
 | 7 | `conversations` | Chat and voice interaction sessions with status tracking |
 | 8 | `messages` | Individual turn messages with token usage, latency, tool calls, and flag tracking |
 | 9 | `audit_logs` | Immutable audit trails capturing administrative events |
+| 10 | `plans` | Master subscription plan catalog (Free, Pro, Ultra Pro, Enterprise) |
+| 11 | `subscriptions` | Active organization subscription tier, period dates, and status |
+| 12 | `payment_transactions` | Razorpay payment records, amounts, orders, and HMAC signatures |
 
 ---
 

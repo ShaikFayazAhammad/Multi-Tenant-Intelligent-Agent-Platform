@@ -12,6 +12,9 @@ import type {
   ToolAssignment,
   MockInstallResult,
   HubSpotStatus,
+  BillingPlan,
+  SubscriptionWithUsage,
+  PaymentTransaction,
 } from '../types';
 
 const API_BASE = '/api';
@@ -28,6 +31,16 @@ export const adminApi = {
   // ----- Auth -----
   login: async (email: string, password: string): Promise<{ access_token: string }> => {
     const res = await api.post('/auth/login', { email, password });
+    return res.data;
+  },
+  signup: async (data: {
+    email: string;
+    password: string;
+    full_name: string;
+    role?: string;
+    org_id?: string;
+  }): Promise<{ access_token: string }> => {
+    const res = await api.post('/auth/signup', data);
     return res.data;
   },
   getMe: async () => {
@@ -194,6 +207,47 @@ export const adminApi = {
   // ----- Playground -----
   testPlaygroundChat: async (projectId: string, query: string) => {
     const res = await api.post(`/admin/projects/${projectId}/playground-test`, { query });
+    return res.data;
+  },
+};
+
+export const billingApi = {
+  getPlans: async (): Promise<BillingPlan[]> => {
+    const res = await api.get('/billing/plans');
+    return res.data;
+  },
+  getSubscription: async (orgId?: string): Promise<SubscriptionWithUsage> => {
+    const res = await api.get('/billing/subscription', { params: orgId ? { org_id: orgId } : {} });
+    return res.data;
+  },
+  createOrder: async (planName: string, billingCycle: 'monthly' | 'yearly', orgId?: string) => {
+    const res = await api.post('/billing/create-order', {
+      plan_name: planName,
+      billing_cycle: billingCycle,
+      ...(orgId ? { org_id: orgId } : {}),
+    });
+    return res.data;
+  },
+  verifyPayment: async (data: {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+    plan_name: string;
+    billing_cycle?: string;
+    org_id?: string;
+  }) => {
+    const res = await api.post('/billing/verify-payment', data);
+    return res.data;
+  },
+  cancelSubscription: async (cancelAtPeriodEnd: boolean = true, orgId?: string) => {
+    const res = await api.post('/billing/cancel', {
+      cancel_at_period_end: cancelAtPeriodEnd,
+      ...(orgId ? { org_id: orgId } : {}),
+    });
+    return res.data;
+  },
+  getInvoices: async (orgId?: string): Promise<PaymentTransaction[]> => {
+    const res = await api.get('/billing/invoices', { params: orgId ? { org_id: orgId } : {} });
     return res.data;
   },
 };

@@ -13,6 +13,7 @@ import KnowledgeBaseView from './views/KnowledgeBaseView';
 import ApiVaultView from './views/ApiVaultView';
 import PlaygroundView from './views/PlaygroundView';
 import VisualBuilderView from './views/VisualBuilderView';
+import BillingView from './views/BillingView';
 import { CheckCircle2, AlertCircle, AlertTriangle, Info, X } from 'lucide-react';
 
 // --- Toast Types ---
@@ -110,84 +111,260 @@ function ToastContainer({ toasts, onRemove }: { toasts: Toast[]; onRemove: (id: 
 
 // --- Login Screen ---
 function LoginScreen({ onLogin }: { onLogin: (token: string) => void }) {
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('admin@bfsi.com');
   const [password, setPassword] = useState('admin123');
+  const [fullName, setFullName] = useState('Super Admin');
+  const [role, setRole] = useState('super_admin');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccessMsg('');
+
     try {
-      const data = await adminApi.login(email, password);
-      localStorage.setItem('bfsi_admin_token', data.access_token);
-      onLogin(data.access_token);
+      if (mode === 'signin') {
+        const data = await adminApi.login(email, password);
+        localStorage.setItem('bfsi_admin_token', data.access_token);
+        onLogin(data.access_token);
+      } else {
+        // Create new login
+        const data = await adminApi.signup({
+          email,
+          password,
+          full_name: fullName,
+          role,
+        });
+        localStorage.setItem('bfsi_admin_token', data.access_token);
+        setSuccessMsg('Account created successfully! Logging you in…');
+        setTimeout(() => {
+          onLogin(data.access_token);
+        }, 600);
+      }
     } catch (err: any) {
-      setError(err?.response?.data?.detail || 'Invalid credentials. Please try again.');
-    } finally { setLoading(false); }
+      setError(
+        err?.response?.data?.detail ||
+          (mode === 'signin'
+            ? 'Invalid credentials. Please try again.'
+            : 'Failed to create login account.')
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="login-screen">
-      <div className="login-card">
+      <div className="login-card" style={{ maxWidth: 440 }}>
         {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{
-            width: 64, height: 64, margin: '0 auto 16px',
-            background: 'linear-gradient(135deg, #6366f1 0%, #818cf8 50%, #0ea5e9 100%)',
-            borderRadius: 18, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 28, fontWeight: 900, color: 'white', boxShadow: '0 8px 32px rgba(99,102,241,0.5)',
-          }}>AI</div>
+        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+          <div
+            style={{
+              width: 58,
+              height: 58,
+              margin: '0 auto 14px',
+              background: 'linear-gradient(135deg, #6366f1 0%, #818cf8 50%, #0ea5e9 100%)',
+              borderRadius: 16,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 24,
+              fontWeight: 900,
+              color: 'white',
+              boxShadow: '0 8px 32px rgba(99,102,241,0.5)',
+            }}
+          >
+            AI
+          </div>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--color-text-primary)', letterSpacing: -0.5 }}>
             BFSI Admin Portal
           </h1>
-          <p style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 6 }}>
+          <p style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 4 }}>
             Multi-Tenant Intelligent Agent Platform
           </p>
         </div>
 
-        {/* Error */}
+        {/* Tab switcher: Sign In vs Create Login */}
+        <div
+          style={{
+            display: 'flex',
+            background: 'rgba(15, 23, 42, 0.6)',
+            borderRadius: 10,
+            padding: 4,
+            marginBottom: 20,
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => {
+              setMode('signin');
+              setError('');
+              setSuccessMsg('');
+            }}
+            style={{
+              flex: 1,
+              padding: '8px 12px',
+              borderRadius: 8,
+              border: 'none',
+              background: mode === 'signin' ? '#6366f1' : 'transparent',
+              color: mode === 'signin' ? '#ffffff' : 'var(--color-text-muted)',
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
+          >
+            Sign In
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMode('signup');
+              setEmail('');
+              setPassword('');
+              setError('');
+              setSuccessMsg('');
+            }}
+            style={{
+              flex: 1,
+              padding: '8px 12px',
+              borderRadius: 8,
+              border: 'none',
+              background: mode === 'signup' ? '#6366f1' : 'transparent',
+              color: mode === 'signup' ? '#ffffff' : 'var(--color-text-muted)',
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
+          >
+            Create Login / Register
+          </button>
+        </div>
+
+        {/* Error / Success Toast */}
         {error && (
-          <div className="toast toast-error" style={{ marginBottom: 20 }}>{error}</div>
+          <div className="toast toast-error" style={{ marginBottom: 18 }}>
+            {error}
+          </div>
+        )}
+        {successMsg && (
+          <div className="toast toast-success" style={{ marginBottom: 18 }}>
+            {successMsg}
+          </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {mode === 'signup' && (
+            <>
+              <div className="form-group">
+                <label className="form-label">Full Name</label>
+                <input
+                  className="form-input"
+                  type="text"
+                  placeholder="e.g. Sarah Jenkins"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Role</label>
+                <select
+                  className="form-input"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                >
+                  <option value="super_admin">Super Admin (All Orgs & Plans)</option>
+                  <option value="supervisor">Supervisor</option>
+                  <option value="lead">Lead Operator</option>
+                </select>
+              </div>
+            </>
+          )}
+
           <div className="form-group">
-            <label className="form-label">Super Admin Email</label>
-            <input className="form-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Password</label>
-            <input className="form-input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required />
+            <label className="form-label">{mode === 'signup' ? 'Work Email' : 'Admin Email'}</label>
+            <input
+              className="form-input"
+              type="email"
+              value={email}
+              placeholder="admin@domain.com"
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              required
+            />
           </div>
 
-          <button type="submit" className="btn btn-primary btn-full btn-lg" disabled={loading}>
-            {loading ? <><div className="spinner" /> Authenticating…</> : 'Sign In to Dashboard'}
+          <div className="form-group">
+            <label className="form-label">Password</label>
+            <input
+              className="form-input"
+              type="password"
+              placeholder={mode === 'signup' ? 'Min 8 characters' : 'Enter password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+              required
+            />
+          </div>
+
+          <button type="submit" className="btn btn-primary btn-full btn-lg" disabled={loading} style={{ marginTop: 4 }}>
+            {loading ? (
+              <>
+                <div className="spinner" /> {mode === 'signin' ? 'Authenticating…' : 'Creating Account…'}
+              </>
+            ) : mode === 'signin' ? (
+              'Sign In to Dashboard'
+            ) : (
+              'Create Login & Continue'
+            )}
           </button>
         </form>
 
-        <div className="divider" />
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {[
-            { label: 'Super Admin', email: 'admin@bfsi.com', pass: 'admin123', color: '#6366f1' },
-            { label: 'Lead Operator', email: 'lead@bfsi.com', pass: 'lead123', color: '#10b981' },
-          ].map((u) => (
-            <button
-              key={u.email}
-              type="button"
-              className="btn btn-secondary btn-sm"
-              style={{ justifyContent: 'flex-start', gap: 10 }}
-              onClick={() => { setEmail(u.email); setPassword(u.pass); }}
-            >
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: u.color, flexShrink: 0 }} />
-              <span style={{ color: 'var(--color-text-muted)' }}>Fill:</span>
-              <span style={{ color: 'var(--color-text-secondary)' }}>{u.label}</span>
-              <span style={{ marginLeft: 'auto', fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: 'var(--color-text-muted)' }}>{u.email}</span>
-            </button>
-          ))}
-        </div>
+        {mode === 'signin' && (
+          <>
+            <div className="divider" />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 2 }}>Quick Demo Login:</div>
+              {[
+                { label: 'Super Admin', email: 'admin@bfsi.com', pass: 'admin123', color: '#6366f1' },
+                { label: 'Lead Operator', email: 'lead@bfsi.com', pass: 'lead123', color: '#10b981' },
+              ].map((u) => (
+                <button
+                  key={u.email}
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  style={{ justifyContent: 'flex-start', gap: 10 }}
+                  onClick={() => {
+                    setEmail(u.email);
+                    setPassword(u.pass);
+                  }}
+                >
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: u.color, flexShrink: 0 }} />
+                  <span style={{ color: 'var(--color-text-muted)' }}>Fill:</span>
+                  <span style={{ color: 'var(--color-text-secondary)' }}>{u.label}</span>
+                  <span
+                    style={{
+                      marginLeft: 'auto',
+                      fontFamily: 'JetBrains Mono, monospace',
+                      fontSize: 10,
+                      color: 'var(--color-text-muted)',
+                    }}
+                  >
+                    {u.email}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -350,6 +527,15 @@ export default function App() {
         return (
           <PlaygroundView
             selectedProject={selectedProject}
+            onMessage={handleMessage}
+          />
+        );
+      case 'billing':
+        return (
+          <BillingView
+            orgs={orgs}
+            selectedOrgId={selectedOrgId}
+            onOrgChange={handleOrgChange}
             onMessage={handleMessage}
           />
         );

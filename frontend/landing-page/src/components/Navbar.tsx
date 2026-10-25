@@ -49,6 +49,10 @@ export const Navbar: React.FC = () => {
             <a href="#architecture" className="hover:text-blue-600 dark:hover:text-cyan-400 transition-colors">
               Architecture
             </a>
+            <a href="#pricing" className="hover:text-blue-600 dark:hover:text-cyan-400 transition-colors flex items-center space-x-1">
+              <span>Pricing</span>
+              <Sparkles className="w-3 h-3 text-amber-400" />
+            </a>
             <a href="#creators" className="hover:text-blue-600 dark:hover:text-cyan-400 transition-colors">
               Developers
             </a>

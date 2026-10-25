@@ -15,6 +15,7 @@ from app.core.database import get_db
 from app.core.security import hash_password, encrypt_secret, decrypt_secret
 from app.api.dependencies import require_super_admin, TenantContext
 from app.models import Organization, User, Project, ProjectConfig, ApiIntegration, KnowledgeDoc
+from app.api.billing_guards import check_project_limit, check_integration_limit, check_knowledge_doc_limit
 from app.schemas.admin import (
     OrgCreate, OrgUpdate, OrgResponse,
     AdminUserCreate, AdminUserUpdate,
@@ -148,6 +149,9 @@ def create_project(org_id: str, req: ProjectCreate, db: Session = Depends(get_db
     if not org:
         raise HTTPException(status_code=404, detail="Organization not found")
 
+    # ── Billing guard: enforce project limit ──
+    check_project_limit(org_id, db)
+
     initial_status = req.status if req.status in ["Live", "Paused", "Draft"] else "Live"
     project = Project(org_id=org_id, name=req.name, domain=req.domain, status=initial_status)
     db.add(project)
@@ -233,6 +237,9 @@ def create_integration(project_id: str, req: ApiIntegrationCreate, db: Session =
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
+
+    # ── Billing guard: enforce API integration limit ──
+    check_integration_limit(project.org_id, db)
 
     encrypted = encrypt_secret(req.secret_key) if req.secret_key else None
     endpoints_json = [ep.model_dump() for ep in req.endpoints]

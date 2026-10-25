@@ -15,7 +15,8 @@ export type NavItem =
   | 'prompt-config'
   | 'knowledge-base'
   | 'api-vault'
-  | 'playground';
+  | 'playground'
+  | 'billing';
 
 // --- Organization ---
 export interface Organization {
@@ -245,4 +246,71 @@ export interface WorkflowCanvasEdge {
   target: string;
   label?: string;
   animated?: boolean;
+}
+
+// --- Billing & Subscription Types ---
+export interface BillingPlan {
+  id: string;
+  name: 'free' | 'pro' | 'ultra_pro' | 'enterprise';
+  display_name: string;
+  description: string;
+  price_monthly: number;
+  price_yearly: number;
+  max_projects: number;
+  max_agents: number;
+  max_conversations_per_month: number;
+  max_knowledge_docs: number;
+  max_api_integrations: number;
+  features: Record<string, any>;
+  is_active: boolean;
+  sort_order: number;
+}
+
+export interface SubscriptionInfo {
+  id: string;
+  org_id: string;
+  plan_id: string;
+  plan?: BillingPlan;
+  status: 'active' | 'past_due' | 'cancelled' | 'pending';
+  billing_cycle: 'monthly' | 'yearly';
+  current_period_start?: string;
+  current_period_end?: string;
+  cancel_at_period_end: boolean;
+  razorpay_subscription_id?: string;
+}
+
+export interface UsageQuotaMetric {
+  current: number;
+  limit: number;
+  percent: number;
+}
+
+export interface OrgUsageSummary {
+  org_id: string;
+  plan_name: string;
+  projects: UsageQuotaMetric;
+  agents: UsageQuotaMetric;
+  knowledge_docs: UsageQuotaMetric;
+  api_integrations: UsageQuotaMetric;
+  conversations_this_month: UsageQuotaMetric;
+}
+
+export interface SubscriptionWithUsage {
+  subscription: SubscriptionInfo;
+  usage: OrgUsageSummary;
+}
+
+export interface PaymentTransaction {
+  id: string;
+  org_id: string;
+  razorpay_order_id?: string;
+  razorpay_payment_id?: string;
+  amount: number;
+  currency: string;
+  status: string;
+  payment_method?: string;
+  plan_name?: string;
+  billing_cycle?: string;
+  description?: string;
+  created_at: string;
 }
