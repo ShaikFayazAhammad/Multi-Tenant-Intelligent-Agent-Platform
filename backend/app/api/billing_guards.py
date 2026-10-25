@@ -69,7 +69,7 @@ def _limit_error(resource: str, limit: int, current: int, plan_name: str):
 # ─── Public guard functions ───────────────────────────────────────────────────
 
 def check_project_limit(org_id: str, db: Session) -> None:
-    """Raise 402 if org has reached its plan's max_projects limit."""
+    """Raise 402 if org has reached its plan's active projects limit."""
     plan, sub, override = _get_plan_for_org(org_id, db)
     if override:
         return  # super_admin bypass
@@ -80,11 +80,11 @@ def check_project_limit(org_id: str, db: Session) -> None:
 
     active_count = db.query(Project).filter(
         Project.org_id == org_id,
-        Project.status.notin_(["suspended", "deleted"])
+        Project.status.in_(["Live", "active", "live"])
     ).count()
 
     if active_count >= max_projects:
-        _limit_error("projects", max_projects, active_count, plan.name if plan else "free")
+        _limit_error("active projects", max_projects, active_count, plan.name if plan else "free")
 
 
 def check_agent_limit(org_id: str, db: Session) -> None:
@@ -105,12 +105,12 @@ def check_agent_limit(org_id: str, db: Session) -> None:
     agent_count = (
         db.query(ProjectConfig)
         .join(Project, ProjectConfig.project_id == Project.id)
-        .filter(Project.org_id == org_id, Project.status.notin_(["suspended", "deleted"]))
+        .filter(Project.org_id == org_id, Project.status.in_(["Live", "active", "live"]))
         .count()
     )
 
     if agent_count >= max_agents:
-        _limit_error("agents", max_agents, agent_count, plan.name if plan else "free")
+        _limit_error("active agents", max_agents, agent_count, plan.name if plan else "free")
 
 
 def check_integration_limit(org_id: str, db: Session) -> None:
@@ -199,13 +199,13 @@ def get_org_usage(org_id: str, db: Session) -> dict:
 
     projects = db.query(Project).filter(
         Project.org_id == org_id,
-        Project.status.notin_(["suspended", "deleted"])
+        Project.status.in_(["Live", "active", "live"])
     ).count()
 
     agents = (
         db.query(ProjectConfig)
         .join(Project, ProjectConfig.project_id == Project.id)
-        .filter(Project.org_id == org_id, Project.status.notin_(["suspended", "deleted"]))
+        .filter(Project.org_id == org_id, Project.status.in_(["Live", "active", "live"]))
         .count()
     )
 

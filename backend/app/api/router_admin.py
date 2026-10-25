@@ -92,12 +92,12 @@ def get_domain_templates(ctx: TenantContext = Depends(require_super_admin)):
 # --- ORGANIZATIONS MANAGEMENT ---
 @router.get("/orgs", response_model=List[OrgResponse])
 def list_organizations(db: Session = Depends(get_db), ctx: TenantContext = Depends(get_tenant_context)):
-    if ctx.is_super_admin() and not ctx.org_id:
-        orgs = db.query(Organization).all()
+    if ctx.is_super_admin():
+        orgs = db.query(Organization).order_by(Organization.created_at.desc()).all()
     elif ctx.org_id:
         orgs = db.query(Organization).filter(Organization.id == ctx.org_id).all()
     else:
-        orgs = db.query(Organization).all()
+        orgs = db.query(Organization).order_by(Organization.created_at.desc()).all()
     res = []
     for org in orgs:
         u_count = len(org.users)
@@ -110,6 +110,11 @@ def list_organizations(db: Session = Depends(get_db), ctx: TenantContext = Depen
 
 @router.post("/orgs", response_model=OrgResponse)
 def create_organization(req: OrgCreate, db: Session = Depends(get_db), ctx: TenantContext = Depends(require_super_admin)):
+    import uuid
+    from datetime import datetime, timedelta
+    from app.models.plan import Plan
+    from app.models.subscription import Subscription
+
     existing = db.query(Organization).filter(Organization.slug == req.slug).first()
     if existing:
         raise HTTPException(status_code=400, detail="Organization slug already exists")
@@ -117,6 +122,22 @@ def create_organization(req: OrgCreate, db: Session = Depends(get_db), ctx: Tena
     db.add(org)
     db.commit()
     db.refresh(org)
+
+    # Auto-provision Free tier subscription for new organization
+    free_plan = db.query(Plan).filter(Plan.name == "free").first()
+    if free_plan:
+        sub = Subscription(
+            id=str(uuid.uuid4()),
+            org_id=org.id,
+            plan_id=free_plan.id,
+            status="active",
+            billing_cycle="monthly",
+            current_period_start=datetime.utcnow(),
+            current_period_end=datetime.utcnow() + timedelta(days=3650),
+        )
+        db.add(sub)
+        db.commit()
+
     return OrgResponse(id=org.id, name=org.name, slug=org.slug, status=org.status, user_count=0, project_count=0)
 
 # --- ORGANIZATION USERS ---
@@ -145,7 +166,7 @@ def create_org_user(org_id: str, req: AdminUserCreate, db: Session = Depends(get
 # --- PROJECTS MANAGEMENT ---
 @router.get("/orgs/{org_id}/projects", response_model=List[ProjectResponse])
 def list_org_projects(org_id: str, db: Session = Depends(get_db), ctx: TenantContext = Depends(require_super_admin)):
-    projects = db.query(Project).filter(Project.org_id == org_id).all()
+    projects = db.query(Project).filter(Project.org_id == org_id).order_by(Project.created_at.desc()).all()
     return [ProjectResponse.model_validate(p) for p in projects]
 
 @router.post("/orgs/{org_id}/projects", response_model=ProjectResponse)
@@ -154,10 +175,12 @@ def create_project(org_id: str, req: ProjectCreate, db: Session = Depends(get_db
     if not org:
         raise HTTPException(status_code=404, detail="Organization not found")
 
-    # ── Billing guard: enforce project limit ──
-    check_project_limit(org_id, db)
-
     initial_status = req.status if req.status in ["Live", "Paused", "Draft"] else "Live"
+
+    # ── Billing guard: enforce active project limit only if creating Live ──
+    if initial_status in ["Live", "active"]:
+        check_project_limit(org_id, db)
+
     project = Project(org_id=org_id, name=req.name, domain=req.domain, status=initial_status)
     db.add(project)
     db.commit()
@@ -189,6 +212,10 @@ def update_project_status(project_id: str, req: ProjectStatusUpdate, db: Session
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
+
+    # ── Billing guard: enforce active project limit when transitioning to Live ──
+    if req.status in ["Live", "active"] and project.status not in ["Live", "active"]:
+        check_project_limit(project.org_id, db)
 
     project.status = req.status
     db.commit()

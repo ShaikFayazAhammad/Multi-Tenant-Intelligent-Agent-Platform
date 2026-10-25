@@ -5,7 +5,7 @@ import type { Organization } from '../types';
 interface OrganizationsViewProps {
   orgs: Organization[];
   selectedOrgId: string;
-  onOrgsUpdate: () => void;
+  onOrgsUpdate: (selectOrgId?: string) => void;
   onMessage: (msg: string, type?: 'success' | 'error') => void;
 }
 
@@ -29,10 +29,10 @@ export default function OrganizationsView({
     if (!orgName.trim() || !orgSlug.trim()) return;
     setOrgLoading(true);
     try {
-      await adminApi.createOrg(orgName.trim(), orgSlug.trim());
+      const created = await adminApi.createOrg(orgName.trim(), orgSlug.trim());
       setOrgName(''); setOrgSlug('');
-      onOrgsUpdate();
-      onMessage(`✅ Organization "${orgName}" created successfully`, 'success');
+      onOrgsUpdate(created.id);
+      onMessage(`✅ Organization "${orgName}" created successfully and selected!`, 'success');
     } catch (err: any) {
       onMessage(err?.response?.data?.detail || 'Failed to create organization', 'error');
     } finally {

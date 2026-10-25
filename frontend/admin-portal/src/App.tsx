@@ -453,13 +453,17 @@ export default function App() {
     addToast(msg, type || 'info');
   }, [addToast]);
 
-  // Load orgs on login or token refresh
-  const loadOrgs = useCallback(async () => {
+  // Load orgs on login or token refresh, optionally selecting a specific org ID
+  const loadOrgs = useCallback(async (selectOrgId?: string) => {
     try {
       const data = await adminApi.getOrgs();
       setOrgs(data);
       if (data.length > 0) {
-        setSelectedOrgId((prev) => (data.some((o) => o.id === prev) ? prev : data[0].id));
+        if (selectOrgId && data.some((o) => o.id === selectOrgId)) {
+          setSelectedOrgId(selectOrgId);
+        } else {
+          setSelectedOrgId((prev) => (data.some((o) => o.id === prev) ? prev : data[0].id));
+        }
       } else {
         setSelectedOrgId('');
         setProjects([]);
