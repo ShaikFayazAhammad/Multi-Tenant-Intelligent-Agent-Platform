@@ -8,10 +8,12 @@ interface PlaygroundViewProps {
 }
 
 const EXAMPLE_QUERIES = [
+  'What is the balance for account ACC100234?',
+  'What is the status of loan LN882211?',
+  'Get details for insurance policy POL99212',
+  'Calculate EMI for loan of 500000 at 9.5% for 36 months',
   'What are the requirements for opening a retail savings account?',
-  'How do I check my loan EMI status?',
-  'What documents are needed for a credit card dispute?',
-  'Explain the process for balance transfer to another bank.',
+  'Search contacts for John in HubSpot CRM',
 ];
 
 export default function PlaygroundView({ selectedProject, onMessage }: PlaygroundViewProps) {
@@ -19,6 +21,7 @@ export default function PlaygroundView({ selectedProject, onMessage }: Playgroun
   const [query, setQuery] = useState('');
   const [isTesting, setIsTesting] = useState(false);
   const [expandedPassages, setExpandedPassages] = useState<number | null>(null);
+  const [expandedToolCalls, setExpandedToolCalls] = useState<number | null>(null);
   const chatEndRef = React.useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -231,6 +234,117 @@ export default function PlaygroundView({ selectedProject, onMessage }: Playgroun
                             <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>{p.text}</div>
                           </div>
                         ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Tool Execution Results Accordion */}
+                {log.tool_calls && log.tool_calls.length > 0 && (
+                  <div style={{ marginTop: 10, background: 'rgba(0,0,0,0.25)', borderRadius: 10, border: '1px solid rgba(6,182,212,0.3)' }}>
+                    <div
+                      className="accordion-header"
+                      onClick={() => setExpandedToolCalls(expandedToolCalls === idx ? null : idx)}
+                    >
+                      <span style={{ fontSize: 12, fontWeight: 600, color: '#06b6d4', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span>⚡</span>
+                        <span>API Tool Executions — {log.tool_calls.length} invoked</span>
+                      </span>
+                      <span style={{ fontSize: 10, color: 'var(--color-text-muted)' }}>
+                        {expandedToolCalls === idx ? '▲ Collapse' : '▼ View Details'}
+                      </span>
+                    </div>
+
+                    {(expandedToolCalls === idx || expandedToolCalls === null) && (
+                      <div style={{ padding: '0 14px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {log.tool_calls.map((tc, tcIdx) => {
+                          const isSuccess = tc.status === 'success' || ((tc.status_code || 0) >= 200 && (tc.status_code || 0) < 400);
+                          return (
+                            <div
+                              key={tcIdx}
+                              style={{
+                                background: isSuccess ? 'rgba(16,185,129,0.05)' : 'rgba(239,68,68,0.08)',
+                                border: `1px solid ${isSuccess ? 'rgba(16,185,129,0.25)' : 'rgba(239,68,68,0.3)'}`,
+                                borderRadius: 8,
+                                padding: '12px 14px',
+                              }}
+                            >
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                                  <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)', fontFamily: 'JetBrains Mono, monospace' }}>
+                                    {tc.tool}
+                                  </span>
+                                  {tc.endpoint && (
+                                    <span style={{
+                                      fontSize: 10,
+                                      padding: '2px 6px',
+                                      borderRadius: 4,
+                                      background: 'rgba(255,255,255,0.06)',
+                                      color: 'var(--color-text-secondary)',
+                                      fontFamily: 'JetBrains Mono, monospace',
+                                    }}>
+                                      {tc.endpoint}
+                                    </span>
+                                  )}
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                  <span className={`badge ${isSuccess ? 'badge-emerald' : 'badge-rose'}`} style={{ fontSize: 10 }}>
+                                    {isSuccess ? `✓ ${tc.status_code || 200} OK` : `✕ ${tc.status_code || 500} ERROR`}
+                                  </span>
+                                  {tc.latency_ms !== undefined && (
+                                    <span style={{ fontSize: 10, color: 'var(--color-text-muted)', fontFamily: 'JetBrains Mono, monospace' }}>
+                                      {tc.latency_ms.toFixed(1)}ms
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {tc.description && (
+                                <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 8 }}>
+                                  {tc.description}
+                                </div>
+                              )}
+
+                              {tc.error && (
+                                <div style={{
+                                  background: 'rgba(239,68,68,0.15)',
+                                  border: '1px solid rgba(239,68,68,0.3)',
+                                  borderRadius: 6,
+                                  padding: '8px 10px',
+                                  fontSize: 11,
+                                  color: '#f87171',
+                                  marginBottom: 8,
+                                  fontFamily: 'JetBrains Mono, monospace',
+                                }}>
+                                  ⚠️ {typeof tc.error === 'string' ? tc.error : JSON.stringify(tc.error)}
+                                </div>
+                              )}
+
+                              {tc.result !== undefined && tc.result !== null && (
+                                <div>
+                                  <div style={{ fontSize: 10, color: 'var(--color-text-muted)', fontWeight: 600, textTransform: 'uppercase', marginBottom: 4 }}>
+                                    Response Payload
+                                  </div>
+                                  <pre style={{
+                                    margin: 0,
+                                    background: 'rgba(0,0,0,0.4)',
+                                    borderRadius: 6,
+                                    padding: '8px 10px',
+                                    fontSize: 11,
+                                    fontFamily: 'JetBrains Mono, monospace',
+                                    color: '#a5f3fc',
+                                    overflowX: 'auto',
+                                    maxHeight: 180,
+                                    whiteSpace: 'pre-wrap',
+                                    wordBreak: 'break-all',
+                                  }}>
+                                    {typeof tc.result === 'object' ? JSON.stringify(tc.result, null, 2) : String(tc.result)}
+                                  </pre>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>

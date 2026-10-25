@@ -1,12 +1,15 @@
 import os
+import re
 import time
 import uuid
+import json
 import logging
 import httpx
+from urllib.parse import urlparse, parse_qs, urlencode
 from typing import List, Optional
 
 logger = logging.getLogger(__name__)
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query, status
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.security import hash_password, encrypt_secret, decrypt_secret
@@ -20,7 +23,10 @@ from app.schemas.admin import (
     ApiIntegrationCreate, ApiIntegrationUpdate, ApiIntegrationResponse,
     TestApiCallRequest, TestApiCallResponse,
     KnowledgeDocResponse, CrawlUrlRequest,
-    PlaygroundTestRequest, PlaygroundTestResponse
+    PlaygroundTestRequest, PlaygroundTestResponse,
+    CurlParseRequest, CurlParseResponse, ParsedHeader,
+    ToolAssignmentsRequest, ToolAssignmentsResponse,
+    MockInstallResponse, HubSpotInstallResponse,
 )
 from app.schemas.auth import UserResponse
 from app.orchestrator.rag_service import PerProjectRAGService
@@ -531,3 +537,389 @@ async def test_agent_playground(
         should_escalate=result.get("should_escalate", False),
     )
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CURL IMPORT PARSER
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.post("/parse-curl", response_model=CurlParseResponse)
+def parse_curl_command(req: CurlParseRequest, ctx: TenantContext = Depends(require_super_admin)):
+    """
+    Parse a raw cURL command into structured API integration fields.
+    Credentials found in the cURL are flagged but NEVER returned in the response —
+    the frontend receives only auth_type and auth_value_present=True, then the user
+    pastes/confirms their secret for Fernet encryption.
+    """
+    import shlex
+    curl = req.curl_command.strip()
+    cleaned = curl.replace("\\\r\n", " ").replace("\\\n", " ")
+
+    method = None
+    raw_url = ""
+    raw_headers = []
+    body_raw = None
+    auth_user = None
+
+    try:
+        tokens = shlex.split(cleaned)
+    except Exception:
+        tokens = cleaned.split()
+
+    i = 0
+    while i < len(tokens):
+        t = tokens[i]
+        if t in ["-X", "--request"] and i + 1 < len(tokens):
+            method = tokens[i + 1].upper()
+            i += 2
+        elif t in ["-H", "--header"] and i + 1 < len(tokens):
+            h_str = tokens[i + 1]
+            if ":" in h_str:
+                k, _, v = h_str.partition(":")
+                raw_headers.append({"key": k.strip(), "value": v.strip()})
+            i += 2
+        elif t in ["-d", "--data", "--data-raw", "--data-binary", "--data-urlencode"] and i + 1 < len(tokens):
+            body_raw = tokens[i + 1]
+            i += 2
+        elif t in ["-u", "--user"] and i + 1 < len(tokens):
+            auth_user = tokens[i + 1]
+            i += 2
+        elif t.startswith("http://") or t.startswith("https://"):
+            if not raw_url:
+                raw_url = t
+            i += 1
+        elif t != "curl" and not t.startswith("-") and not raw_url and ("/" in t or "." in t):
+            raw_url = t
+            i += 1
+        else:
+            i += 1
+
+    # Fallback for method
+    if not method:
+        method = "POST" if body_raw is not None else "GET"
+
+    # Fallback for URL if not captured
+    if not raw_url:
+        url_fallback = re.search(r"https?://[^\s'\"\\]+", curl)
+        raw_url = url_fallback.group(0).strip("'\"") if url_fallback else ""
+
+    parsed_url = urlparse(raw_url)
+    base_url = f"{parsed_url.scheme}://{parsed_url.netloc}" if parsed_url.netloc else raw_url
+    path = parsed_url.path or "/"
+    query_string = parsed_url.query or ""
+    query_params = {k: v[0] for k, v in parse_qs(query_string).items()}
+
+    # Fallback headers regex if tokens missed any
+    if not raw_headers:
+        header_matches = re.findall(r"-H\s+['\"]([^'\"]+)['\"]", curl)
+        for h in header_matches:
+            if ":" in h:
+                key, _, val = h.partition(":")
+                raw_headers.append({"key": key.strip(), "value": val.strip()})
+
+    # ---- Auth Detection ----
+    auth_type = "none"
+    auth_value_present = False
+
+    # Check Authorization header
+    auth_header = next((h for h in raw_headers if h["key"].lower() == "authorization"), None)
+    if auth_header:
+        val_lower = auth_header["value"].lower()
+        if val_lower.startswith("bearer "):
+            auth_type = "bearer"
+            auth_value_present = bool(auth_header["value"].split(" ", 1)[-1].strip())
+        elif val_lower.startswith("basic "):
+            auth_type = "basic"
+            auth_value_present = True
+        auth_header["value"] = "[REDACTED — paste secret in vault]"
+
+    # Check X-API-Key header
+    api_key_header = next((h for h in raw_headers if h["key"].lower() in ["x-api-key", "api-key", "apikey"]), None)
+    if api_key_header and auth_type == "none":
+        auth_type = "api_key"
+        auth_value_present = True
+        api_key_header["value"] = "[REDACTED — paste secret in vault]"
+
+    # Check -u / --user
+    if (auth_user or re.search(r'(?:-u|--user)\s+[\'"]?([^\s\'"]+)[\'"]?', curl)) and auth_type == "none":
+        auth_type = "basic"
+        auth_value_present = True
+
+    # Filter out auth headers from returned list
+    safe_headers = [
+        ParsedHeader(key=h["key"], value=h["value"])
+        for h in raw_headers
+        if h["key"].lower() not in ["authorization", "x-api-key", "api-key", "apikey"]
+    ]
+
+    # ---- Body ----
+    content_type = next((h["value"] for h in raw_headers if h["key"].lower() == "content-type"), None)
+    if not body_raw:
+        body_match = re.search(r"(?:--data-raw|--data-binary|--data|-d)\s+['\"]([^'\"]*)['\"]", curl, re.DOTALL)
+        if body_match:
+            body_raw = body_match.group(1).strip()
+
+    body_json = None
+    if body_raw:
+        try:
+            body_json = json.loads(body_raw)
+        except Exception:
+            body_json = None
+
+    # ---- Suggested Names ----
+    host_part = parsed_url.netloc.replace("api.", "").split(".")[0]
+    path_part = path.strip("/").split("/")[0] if path.strip("/") else "endpoint"
+    suggested_name = f"{host_part.title()} {method} API" if host_part else "Imported API"
+    suggested_endpoint_name = f"{method.lower()}_{path_part}".replace("-", "_")
+
+    return CurlParseResponse(
+        method=method,
+        url=raw_url,
+        base_url=base_url,
+        path=path,
+        headers=safe_headers,
+        auth_type=auth_type,
+        auth_value_present=auth_value_present,
+        query_params=query_params,
+        body_json=body_json,
+        body_raw=body_raw,
+        content_type=content_type,
+        suggested_name=suggested_name,
+        suggested_endpoint_name=suggested_endpoint_name,
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TOOL ASSIGNMENTS — Enable/disable integrations per project (agent-to-tool)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.get("/projects/{project_id}/tool-assignments", response_model=ToolAssignmentsResponse)
+def get_tool_assignments(
+    project_id: str,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(require_super_admin),
+):
+    """Get current tool assignment state (enabled/disabled) for all integrations in a project."""
+    integrations = db.query(ApiIntegration).filter(ApiIntegration.project_id == project_id).all()
+    assignments = [
+        {"integration_id": i.id, "name": i.name, "is_enabled": i.is_enabled}
+        for i in integrations
+    ]
+    return ToolAssignmentsResponse(updated=0, assignments=assignments)
+
+
+@router.put("/projects/{project_id}/tool-assignments", response_model=ToolAssignmentsResponse)
+def update_tool_assignments(
+    project_id: str,
+    req: ToolAssignmentsRequest,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(require_super_admin),
+):
+    """
+    Enable or disable specific API integrations (tools) for an agent/project.
+    Only enabled tools are loaded into the DynamicOrchestrator at runtime.
+    """
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    updated = 0
+    for item in req.assignments:
+        integration = db.query(ApiIntegration).filter(
+            ApiIntegration.id == item.integration_id,
+            ApiIntegration.project_id == project_id,
+        ).first()
+        if integration:
+            integration.is_enabled = item.is_enabled
+            updated += 1
+
+    db.commit()
+
+    all_integrations = db.query(ApiIntegration).filter(ApiIntegration.project_id == project_id).all()
+    return ToolAssignmentsResponse(
+        updated=updated,
+        assignments=[
+            {"integration_id": i.id, "name": i.name, "is_enabled": i.is_enabled}
+            for i in all_integrations
+        ],
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# MOCK BFSI INTEGRATION INSTALLER
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.post("/projects/{project_id}/install-mock-integrations", response_model=MockInstallResponse)
+def install_mock_integrations(
+    project_id: str,
+    base_url: Optional[str] = Query(None, description="Custom base URL, e.g. https://chatbot.haloocom.in/mockapi1"),
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(require_super_admin),
+):
+    """
+    One-click install of BFSI Mock API integrations for Banking, Insurance, and Finance.
+    Creates ApiIntegration records pointing to the internal or remote /api/mock/* endpoints.
+    Updates base_url on existing mock integrations if specified.
+    """
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    # Determine the mock API base URL (custom domain, env variable, or default localhost)
+    mock_base = (base_url or os.environ.get("MOCK_API_BASE_URL") or "http://localhost:8000").rstrip("/")
+
+    MOCK_SUITES = [
+        {
+            "name": "[MOCK] Banking APIs",
+            "base_url": f"{mock_base}/api/mock/banking",
+            "auth_type": "none",
+            "endpoints": [
+                {"name": "get_account_balance", "method": "GET", "path": "/accounts/{{account_id}}/balance",
+                 "description": "Get account balance and details for a customer"},
+                {"name": "get_account_details", "method": "GET", "path": "/accounts/{{account_id}}",
+                 "description": "Get full account holder details"},
+                {"name": "get_transactions", "method": "GET", "path": "/accounts/{{account_id}}/transactions",
+                 "description": "Retrieve recent transaction history"},
+                {"name": "get_loan_status", "method": "GET", "path": "/loans/{{loan_id}}/status",
+                 "description": "Check loan status, outstanding amount, and next due date"},
+                {"name": "get_loan_schedule", "method": "GET", "path": "/loans/{{loan_id}}/schedule",
+                 "description": "Get upcoming EMI repayment schedule"},
+                {"name": "create_service_request", "method": "POST", "path": "/service-requests",
+                 "description": "Create a banking service request (card block, cheque book, etc.)"},
+            ],
+        },
+        {
+            "name": "[MOCK] Insurance APIs",
+            "base_url": f"{mock_base}/api/mock/insurance",
+            "auth_type": "none",
+            "endpoints": [
+                {"name": "get_policy_details", "method": "GET", "path": "/policies/{{policy_id}}",
+                 "description": "Get insurance policy details, coverage, and premium"},
+                {"name": "get_policy_status", "method": "GET", "path": "/policies/{{policy_id}}/status",
+                 "description": "Check policy status and premium due date"},
+                {"name": "get_claim_status", "method": "GET", "path": "/claims/{{claim_id}}/status",
+                 "description": "Check insurance claim processing status"},
+                {"name": "create_claim", "method": "POST", "path": "/claims",
+                 "description": "File a new insurance claim"},
+                {"name": "create_renewal", "method": "POST", "path": "/renewals",
+                 "description": "Initiate a policy renewal request"},
+            ],
+        },
+        {
+            "name": "[MOCK] Finance APIs",
+            "base_url": f"{mock_base}/api/mock/finance",
+            "auth_type": "none",
+            "endpoints": [
+                {"name": "calculate_emi", "method": "GET", "path": "/emi",
+                 "description": "Calculate EMI for a loan given principal, rate, and tenure"},
+                {"name": "get_loan_application_status", "method": "GET", "path": "/loan-applications/{{app_id}}/status",
+                 "description": "Check the status of a loan application"},
+                {"name": "get_repayment_history", "method": "GET", "path": "/repayments/{{loan_id}}/history",
+                 "description": "Retrieve loan repayment history"},
+            ],
+        },
+    ]
+
+    installed = []
+    integration_ids = []
+
+    for suite in MOCK_SUITES:
+        # Check if already installed (idempotent, but update base_url if changed)
+        existing = db.query(ApiIntegration).filter(
+            ApiIntegration.project_id == project_id,
+            ApiIntegration.name == suite["name"],
+        ).first()
+
+        if existing:
+            existing.base_url = suite["base_url"]
+            integration_ids.append(existing.id)
+            installed.append(f"{suite['name']} (updated base_url to {suite['base_url']})")
+            continue
+
+        integration = ApiIntegration(
+            org_id=project.org_id,
+            project_id=project_id,
+            name=suite["name"],
+            base_url=suite["base_url"],
+            auth_type=suite["auth_type"],
+            encrypted_secret=None,
+            endpoints=suite["endpoints"],
+            is_enabled=True,
+        )
+        db.add(integration)
+        db.flush()
+        integration_ids.append(integration.id)
+        installed.append(suite["name"])
+
+    db.commit()
+
+    return MockInstallResponse(
+        status="success",
+        installed=installed,
+        integration_ids=integration_ids,
+        message=f"Installed {len(MOCK_SUITES)} mock BFSI integration suites with {sum(len(s['endpoints']) for s in MOCK_SUITES)} total tool endpoints. Assign them to this agent using the tool assignments panel.",
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# HUBSPOT INTEGRATION INSTALLER
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.post("/projects/{project_id}/install-hubspot-integration", response_model=HubSpotInstallResponse)
+def install_hubspot_integration(
+    project_id: str,
+    db: Session = Depends(get_db),
+    ctx: TenantContext = Depends(require_super_admin),
+):
+    """
+    Register HubSpot CRM as an ApiIntegration entry for this project (without credentials).
+    Credentials must be added via POST /api/admin/hubspot/connect.
+    This is safe to call without a token — it creates the placeholder record only.
+    """
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    existing = db.query(ApiIntegration).filter(
+        ApiIntegration.project_id == project_id,
+        ApiIntegration.name.like("%HubSpot%"),
+    ).first()
+
+    if existing:
+        return HubSpotInstallResponse(
+            status="already_installed",
+            integration_id=existing.id,
+            message="HubSpot integration already registered. Use POST /api/admin/hubspot/connect to add or update credentials.",
+        )
+
+    integration = ApiIntegration(
+        org_id=project.org_id,
+        project_id=project_id,
+        name="HubSpot CRM",
+        base_url="https://api.hubapi.com",
+        auth_type="bearer",
+        encrypted_secret=None,  # Will be set via /connect
+        is_enabled=False,  # Disabled until credentials are configured
+        endpoints=[
+            {"name": "search_contacts", "method": "POST",
+             "path": "/crm/v3/objects/contacts/search",
+             "description": "Search HubSpot contacts by name or email"},
+            {"name": "get_contact", "method": "GET",
+             "path": "/crm/v3/objects/contacts/{id}",
+             "description": "Get a HubSpot contact by ID"},
+            {"name": "create_contact", "method": "POST",
+             "path": "/crm/v3/objects/contacts",
+             "description": "Create a new contact in HubSpot CRM"},
+            {"name": "create_task", "method": "POST",
+             "path": "/crm/v3/objects/tasks",
+             "description": "Create a follow-up task in HubSpot CRM"},
+        ],
+    )
+    db.add(integration)
+    db.commit()
+    db.refresh(integration)
+
+    return HubSpotInstallResponse(
+        status="installed",
+        integration_id=integration.id,
+        message="HubSpot CRM integration registered. It is disabled until you connect via POST /api/admin/hubspot/connect with your Private App Token.",
+    )

@@ -123,17 +123,69 @@ export interface AuditLog {
 }
 
 // --- Playground ---
+export interface PlaygroundToolCall {
+  tool: string;
+  description?: string;
+  endpoint?: string;
+  method?: string;
+  status?: string;
+  status_code?: number;
+  latency_ms?: number;
+  result?: any;
+  error?: string;
+}
+
 export interface PlaygroundLog {
   role: 'user' | 'assistant';
   content: string;
   intent?: string;
   rag_passages?: { filename?: string; text: string; score: number }[];
-  tool_calls?: { tool: string }[];
+  tool_calls?: PlaygroundToolCall[];
   should_escalate?: boolean;
   is_flagged?: boolean;
   latency_ms?: number;
   tokens_used?: number;
   model_used?: string;
+}
+
+// --- cURL Parse Result ---
+export interface CurlParseResult {
+  method: string;
+  url: string;
+  base_url: string;
+  path: string;
+  headers: { key: string; value: string }[];
+  auth_type: string;
+  auth_value_present: boolean;
+  query_params: Record<string, string>;
+  body_json?: Record<string, any> | null;
+  body_raw?: string | null;
+  content_type?: string | null;
+  suggested_name: string;
+  suggested_endpoint_name: string;
+}
+
+// --- Tool Assignment ---
+export interface ToolAssignment {
+  integration_id: string;
+  name: string;
+  is_enabled: boolean;
+}
+
+// --- Mock Install Result ---
+export interface MockInstallResult {
+  status: string;
+  installed: string[];
+  integration_ids: string[];
+  message: string;
+}
+
+// --- HubSpot Status ---
+export interface HubSpotStatus {
+  status: 'connected' | 'unconfigured';
+  message: string;
+  project_id: string;
+  integration_id?: string;
 }
 
 // --- User ---

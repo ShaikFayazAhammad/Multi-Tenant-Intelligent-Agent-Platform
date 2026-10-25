@@ -8,6 +8,10 @@ import type {
   AnalyticsDashboard,
   AuditLog,
   DomainTemplate,
+  CurlParseResult,
+  ToolAssignment,
+  MockInstallResult,
+  HubSpotStatus,
 } from '../types';
 
 const API_BASE = '/api';
@@ -101,6 +105,52 @@ export const adminApi = {
     const res = await api.post(`/admin/integrations/${integrationId}/test-call`, {
       endpoint_name: endpointName, query_params: queryParams, body_json: bodyJson,
     });
+    return res.data;
+  },
+
+  // ----- cURL Import Parser -----
+  parseCurl: async (curlCommand: string): Promise<CurlParseResult> => {
+    const res = await api.post('/admin/parse-curl', { curl_command: curlCommand });
+    return res.data;
+  },
+
+  // ----- Tool Assignments -----
+  getToolAssignments: async (projectId: string): Promise<ToolAssignment[]> => {
+    const res = await api.get(`/admin/projects/${projectId}/tool-assignments`);
+    return res.data.assignments;
+  },
+  updateToolAssignments: async (
+    projectId: string,
+    assignments: { integration_id: string; is_enabled: boolean }[]
+  ): Promise<{ updated: number; assignments: ToolAssignment[] }> => {
+    const res = await api.put(`/admin/projects/${projectId}/tool-assignments`, { assignments });
+    return res.data;
+  },
+
+  // ----- Mock BFSI Integration Install -----
+  installMockIntegrations: async (projectId: string): Promise<MockInstallResult> => {
+    const res = await api.post(`/admin/projects/${projectId}/install-mock-integrations`);
+    return res.data;
+  },
+
+  // ----- HubSpot CRM Integration -----
+  getHubSpotStatus: async (projectId: string): Promise<HubSpotStatus> => {
+    const res = await api.get('/admin/hubspot/status', { params: { project_id: projectId } });
+    return res.data;
+  },
+  connectHubSpot: async (projectId: string, privateAppToken: string) => {
+    const res = await api.post('/admin/hubspot/connect', {
+      project_id: projectId,
+      private_app_token: privateAppToken,
+    });
+    return res.data;
+  },
+  installHubSpotIntegration: async (projectId: string) => {
+    const res = await api.post(`/admin/projects/${projectId}/install-hubspot-integration`);
+    return res.data;
+  },
+  searchHubSpotContacts: async (projectId: string, q: string = '') => {
+    const res = await api.get('/admin/hubspot/contacts', { params: { project_id: projectId, q } });
     return res.data;
   },
 

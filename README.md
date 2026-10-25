@@ -461,12 +461,45 @@ POST /api/auth/login
 | `GET` | `/api/admin/projects/{project_id}/config` | Get system prompt, guardrails, model settings |
 | `PUT` | `/api/admin/projects/{project_id}/config` | Update project configuration |
 
-#### API Integrations (Secret Vault)
+#### API Integrations & cURL Import (Secret Vault)
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
 | `GET` | `/api/admin/projects/{project_id}/integrations` | List registered API integrations |
-| `POST` | `/api/admin/projects/{project_id}/integrations` | Register external API (secrets encrypted) |
+| `POST` | `/api/admin/projects/{project_id}/integrations` | Register external API (secrets encrypted via Fernet) |
+| `POST` | `/api/admin/parse-curl` | Parse raw cURL command into structured API tool spec |
+| `GET` | `/api/admin/projects/{project_id}/tool-assignments` | Get tool enablement status per agent |
+| `PUT` | `/api/admin/projects/{project_id}/tool-assignments` | Enable/disable specific tools for an agent |
+| `POST` | `/api/admin/projects/{project_id}/install-mock-integrations` | One-click install of BFSI Mock suites |
+| `POST` | `/api/admin/projects/{project_id}/install-hubspot-integration` | Register HubSpot CRM tools |
 | `POST` | `/api/admin/integrations/{integration_id}/test-call` | Live test-call to external API |
+
+#### HubSpot CRM Integration (`/api/admin/hubspot`)
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/admin/hubspot/status?project_id={id}` | Check HubSpot connection state |
+| `POST` | `/api/admin/hubspot/connect` | Connect Private App Token / Demo Sandbox token |
+| `GET` | `/api/admin/hubspot/contacts?project_id={id}&q=` | Search HubSpot CRM contacts |
+| `GET` | `/api/admin/hubspot/contacts/{id}?project_id={id}` | Get contact by ID |
+| `POST` | `/api/admin/hubspot/contacts` | Create new contact |
+| `POST` | `/api/admin/hubspot/tasks` | Create client follow-up task |
+
+#### Mock BFSI APIs (`/api/mock`) — Public HTTPS Demo Suite
+| Domain | Method | Endpoint | Description |
+| :--- | :--- | :--- | :--- |
+| **Banking** | `GET` | `/api/mock/banking/accounts/{id}` | Account holder details |
+| **Banking** | `GET` | `/api/mock/banking/accounts/{id}/balance` | Real-time balance |
+| **Banking** | `GET` | `/api/mock/banking/accounts/{id}/transactions`| Transaction history |
+| **Banking** | `GET` | `/api/mock/banking/loans/{id}/status` | Loan status & outstanding balance |
+| **Banking** | `GET` | `/api/mock/banking/loans/{id}/schedule` | 6-month EMI repayment schedule |
+| **Banking** | `POST` | `/api/mock/banking/service-requests` | Card block, cheque book request |
+| **Insurance** | `GET` | `/api/mock/insurance/policies/{id}` | Insurance policy coverage & premium |
+| **Insurance** | `GET` | `/api/mock/insurance/policies/{id}/status` | Policy status & premium countdown |
+| **Insurance** | `GET` | `/api/mock/insurance/claims/{id}/status` | Claim lifecycle tracking |
+| **Insurance** | `POST` | `/api/mock/insurance/claims` | File new insurance claim |
+| **Insurance** | `POST` | `/api/mock/insurance/renewals` | Policy renewal request |
+| **Finance** | `GET` | `/api/mock/finance/emi` | Reducing balance EMI calculator |
+| **Finance** | `GET` | `/api/mock/finance/loan-applications/{id}/status` | Application processing status |
+| **Finance** | `GET` | `/api/mock/finance/repayments/{id}/history` | Historical payment records |
 
 #### Knowledge Base (RAG)
 | Method | Endpoint | Description |
@@ -478,7 +511,7 @@ POST /api/auth/login
 #### Agent Playground
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `POST` | `/api/admin/projects/{project_id}/playground-test` | Full agent simulation with observability |
+| `POST` | `/api/admin/projects/{project_id}/playground-test` | Full agent simulation with rich tool telemetry & observability |
 
 ---
 
@@ -678,6 +711,7 @@ The **BFSI Multi-Tenant Intelligent Agent Platform** is co-created and engineere
 
 | Document | Description |
 | :--- | :--- |
+| [API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) | Complete API docs (cURL Import, Mock BFSI Suite, HubSpot, DB Viewer) |
 | [COMPLETE_SETUP_GUIDE.md](COMPLETE_SETUP_GUIDE.md) | Step-by-step full setup walkthrough |
 | [ENVIRONMENT_SETUP_GUIDE.md](ENVIRONMENT_SETUP_GUIDE.md) | Environment configuration reference |
 | [WINDOWS_STARTUP_GUIDE.md](WINDOWS_STARTUP_GUIDE.md) | Windows-specific startup instructions |

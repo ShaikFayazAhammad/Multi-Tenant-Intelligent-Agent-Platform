@@ -11,6 +11,8 @@ from app.api.router_admin import router as admin_router
 from app.api.router_client import router as client_router
 from app.api.router_websocket import router as ws_router
 from app.api.router_analytics import router as analytics_router
+from app.api.router_mock_apis import router as mock_apis_router
+from app.api.router_hubspot import router as hubspot_router
 
 # Ensure tables exist on startup
 Base.metadata.create_all(bind=engine)
@@ -124,6 +126,8 @@ app.include_router(admin_router)
 app.include_router(client_router)
 app.include_router(analytics_router)
 app.include_router(ws_router)
+app.include_router(mock_apis_router)   # /api/mock/* — BFSI Demo Mock APIs
+app.include_router(hubspot_router)     # /api/admin/hubspot/* — HubSpot CRM Integration
 
 @app.get("/")
 def root():

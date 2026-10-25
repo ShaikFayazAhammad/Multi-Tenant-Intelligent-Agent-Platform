@@ -134,21 +134,79 @@ class DynamicOrchestrator:
         
         kb_context = "\n".join([f"- [{item.get('filename','doc')}]: {item['text']}" for item in kb_results]) if kb_results else ""
 
-        # Check for dynamic tool matches
-        query_lower = processed_query.lower()
+        # ── LLM-GUIDED TOOL SELECTION ──────────────────────────────────────────
+        # Build a tool catalogue string and ask the LLM which tool (if any) to use
         executed_tool = None
+        selected_tool_key = None
 
-        for tool_key, tool_info in self.dynamic_tools.items():
-            tool_name_words = tool_key.replace("_", " ").split()
-            if any(w in query_lower for w in tool_name_words if len(w) > 3):
-                executed_tool = tool_info
-                break
+        if self.dynamic_tools:
+            tool_catalogue = "\n".join([
+                f"  - {key}: {info.get('description', 'No description')}"
+                for key, info in self.dynamic_tools.items()
+            ])
+            selection_prompt = (
+                f"Given this user query: \"{processed_query}\"\n\n"
+                f"Available API tools:\n{tool_catalogue}\n\n"
+                f"Which ONE tool key exactly matches what the user needs? "
+                f"Reply with ONLY the tool key (e.g. mock_banking_apis_get_loan_status) or 'none' if no tool fits. "
+                f"No explanation."
+            )
+            try:
+                sel_response = llm.chat(
+                    system_prompt="You are a precise tool router. Reply with one tool key or 'none'.",
+                    messages=[{"role": "user", "content": selection_prompt}],
+                    model=self.agent_settings.get("llm_model", "meta-llama/llama-3.1-8b-instruct"),
+                    temperature=0.0,
+                    max_tokens=50,
+                )
+                selected_key_raw = sel_response.get("answer", "none").strip().lower()
+                if selected_key_raw not in ["none", "none.", "n/a", "no", "no tool", "null"]:
+                    # Exact match first
+                    if selected_key_raw in self.dynamic_tools:
+                        selected_tool_key = selected_key_raw
+                    else:
+                        # Fuzzy: find the tool key that appears in the response
+                        for tk in self.dynamic_tools:
+                            if tk in selected_key_raw:
+                                selected_tool_key = tk
+                                break
+            except Exception as tool_sel_err:
+                logger.warning(f"[Orchestrator] Tool selection LLM failed: {tool_sel_err}. Falling back to keyword match.")
 
+            # Fallback to best scoring keyword match if LLM selection returned nothing
+            if not selected_tool_key:
+                query_lower = processed_query.lower()
+                best_score = 0
+                for tool_key, tool_info in self.dynamic_tools.items():
+                    name_words = set(tool_key.replace("_", " ").split())
+                    desc_words = set(tool_info.get("description", "").lower().split())
+                    all_words = name_words.union(desc_words)
+                    matching = [w for w in all_words if len(w) > 3 and w in query_lower]
+                    if len(matching) > best_score:
+                        best_score = len(matching)
+                        selected_tool_key = tool_key
+
+            if selected_tool_key:
+                executed_tool = self.dynamic_tools[selected_tool_key]
+
+        tool_context_str = ""
         if executed_tool:
             intent = executed_tool["name"]
             tool_res = await executed_tool["executor"]()
-            tool_calls.append({"tool": executed_tool["name"], "result": tool_res})
-            tool_context_str = f"API Tool Result ({executed_tool['name']}): {tool_res.get('data')}"
+            tool_calls.append({
+                "tool": executed_tool["name"],
+                "description": executed_tool.get("description", ""),
+                "endpoint": tool_res.get("endpoint") or f"{executed_tool.get('method', 'GET')} {executed_tool.get('path', '')}",
+                "status": tool_res.get("status", "unknown"),
+                "status_code": tool_res.get("status_code"),
+                "latency_ms": tool_res.get("latency_ms"),
+                "result": tool_res.get("data"),
+                "error": tool_res.get("error") if tool_res.get("status") == "error" else None,
+            })
+            tool_context_str = (
+                f"API Tool Result ({executed_tool['name']}): "
+                f"{str(tool_res.get('data', ''))[:2000]}"
+            )
 
         # Combine system prompt with instructions and tool output if present
         prompt_with_instructions = self.system_prompt
@@ -298,8 +356,18 @@ class DynamicOrchestrator:
         if executed_tool:
             intent = executed_tool["name"]
             tool_res = await executed_tool["executor"]()
-            tool_calls.append({"tool": executed_tool["name"], "result": tool_res})
-            tool_context_str = f"API Tool Result ({executed_tool['name']}): {tool_res.get('data')}"
+            tool_calls.append({
+                "tool": executed_tool["name"],
+                "description": executed_tool.get("description", ""),
+                "status": tool_res.get("status", "unknown"),
+                "status_code": tool_res.get("status_code"),
+                "latency_ms": tool_res.get("latency_ms"),
+                "result": tool_res.get("data"),
+            })
+            tool_context_str = (
+                f"API Tool Result ({executed_tool['name']}): "
+                f"{str(tool_res.get('data', ''))[:2000]}"
+            )
 
         prompt_with_instructions = self.system_prompt
         if tool_context_str:

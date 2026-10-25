@@ -162,3 +162,62 @@ class PlaygroundTestResponse(BaseModel):
     is_flagged: bool = False
     should_escalate: bool = False
 
+# ─────────────────────────────────────────────
+# NEW: cURL Import Parser
+# ─────────────────────────────────────────────
+
+class CurlParseRequest(BaseModel):
+    curl_command: str = Field(..., description="Raw cURL command string to parse")
+
+class ParsedHeader(BaseModel):
+    key: str
+    value: str
+
+class CurlParseResponse(BaseModel):
+    method: str
+    url: str
+    base_url: str
+    path: str
+    headers: List[ParsedHeader]
+    auth_type: str          # none, bearer, api_key, basic
+    auth_value_present: bool  # True if an auth credential was found (value NEVER returned)
+    query_params: Dict[str, str]
+    body_json: Optional[Dict[str, Any]]
+    body_raw: Optional[str]
+    content_type: Optional[str]
+    suggested_name: str
+    suggested_endpoint_name: str
+
+# ─────────────────────────────────────────────
+# NEW: Tool Assignments (per-project enable/disable)
+# ─────────────────────────────────────────────
+
+class ToolAssignmentItem(BaseModel):
+    integration_id: str
+    is_enabled: bool
+
+class ToolAssignmentsRequest(BaseModel):
+    assignments: List[ToolAssignmentItem]
+
+class ToolAssignmentsResponse(BaseModel):
+    updated: int
+    assignments: List[Dict[str, Any]]
+
+# ─────────────────────────────────────────────
+# NEW: Mock Integration Install
+# ─────────────────────────────────────────────
+
+class MockInstallResponse(BaseModel):
+    status: str
+    installed: List[str]
+    integration_ids: List[str]
+    message: str
+
+# ─────────────────────────────────────────────
+# NEW: HubSpot Install Response
+# ─────────────────────────────────────────────
+
+class HubSpotInstallResponse(BaseModel):
+    status: str
+    integration_id: Optional[str] = None
+    message: str
