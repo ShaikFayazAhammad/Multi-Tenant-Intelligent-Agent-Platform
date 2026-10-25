@@ -1,4 +1,18 @@
 import React from 'react';
+import {
+  LayoutDashboard,
+  Workflow,
+  Building2,
+  Bot,
+  Sparkles,
+  BookOpen,
+  KeyRound,
+  PlaySquare,
+  ChevronLeft,
+  ChevronRight,
+  ShieldCheck,
+  type LucideIcon,
+} from 'lucide-react';
 import type { NavItem } from '../../types';
 
 interface SidebarProps {
@@ -6,15 +20,21 @@ interface SidebarProps {
   onNavChange: (item: NavItem) => void;
 }
 
-const navItems: { id: NavItem; icon: string; label: string; section?: string }[] = [
-  { id: 'dashboard', icon: '📊', label: 'Dashboard', section: 'OVERVIEW' },
-  { id: 'visual-builder', icon: '🧩', label: 'Visual Builder', section: 'WORKFLOW STUDIO' },
-  { id: 'organizations', icon: '🏢', label: 'Orgs & Credentials', section: 'MANAGEMENT' },
-  { id: 'agents', icon: '🤖', label: 'Projects & Agents' },
-  { id: 'prompt-config', icon: '✍️', label: 'Configure Prompt', section: 'CONFIGURATION' },
-  { id: 'knowledge-base', icon: '📚', label: 'Knowledge Base' },
-  { id: 'api-vault', icon: '🔐', label: 'API Vault' },
-  { id: 'playground', icon: '🎮', label: 'Playground', section: 'TESTING' },
+const navItems: {
+  id: NavItem;
+  icon: LucideIcon;
+  label: string;
+  section?: string;
+  badge?: string;
+}[] = [
+  { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', section: 'OVERVIEW' },
+  { id: 'visual-builder', icon: Workflow, label: 'Visual Builder', section: 'WORKFLOW STUDIO', badge: 'PRO' },
+  { id: 'organizations', icon: Building2, label: 'Orgs & Credentials', section: 'MANAGEMENT' },
+  { id: 'agents', icon: Bot, label: 'Projects & Agents' },
+  { id: 'prompt-config', icon: Sparkles, label: 'Configure Prompt', section: 'INTELLIGENCE' },
+  { id: 'knowledge-base', icon: BookOpen, label: 'Knowledge Base' },
+  { id: 'api-vault', icon: KeyRound, label: 'API Vault' },
+  { id: 'playground', icon: PlaySquare, label: 'Playground', section: 'TESTING' },
 ];
 
 export default function Sidebar({ activeNav, onNavChange }: SidebarProps) {
@@ -22,53 +42,67 @@ export default function Sidebar({ activeNav, onNavChange }: SidebarProps) {
 
   return (
     <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
-      {/* Logo */}
+      {/* Brand Logo */}
       <div className="sidebar-logo">
-        <div className="sidebar-logo-icon">AI</div>
+        <div className="sidebar-logo-icon">
+          <ShieldCheck size={22} color="#ffffff" strokeWidth={2.2} />
+        </div>
         <div className="sidebar-logo-text">
-          <h1>BFSI Platform</h1>
-          <p>Super Admin Console</p>
+          <div className="sidebar-logo-title-row">
+            <h1>BFSI Platform</h1>
+            <span className="sidebar-badge">v2.2</span>
+          </div>
+          <p>Multi-Tenant Agent Console</p>
         </div>
       </div>
 
       {/* Nav Items */}
       <nav className="sidebar-nav">
-        {navItems.map((item) => (
-          <React.Fragment key={item.id}>
-            {item.section && (
-              <div className="sidebar-section-label">{item.section}</div>
-            )}
-            <button
-              className={`nav-item ${activeNav === item.id ? 'active' : ''}`}
-              onClick={() => onNavChange(item.id)}
-              title={collapsed ? item.label : undefined}
-              style={{ width: '100%', textAlign: 'left' }}
-            >
-              <span className="nav-icon" style={{ fontSize: 16 }}>{item.icon}</span>
-              <span className="nav-label">{item.label}</span>
-            </button>
-          </React.Fragment>
-        ))}
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = activeNav === item.id;
+          return (
+            <React.Fragment key={item.id}>
+              {item.section && (
+                <div className="sidebar-section-label">{item.section}</div>
+              )}
+              <button
+                className={`nav-item ${isActive ? 'active' : ''}`}
+                onClick={() => onNavChange(item.id)}
+                title={collapsed ? item.label : undefined}
+                style={{ width: '100%', textAlign: 'left' }}
+              >
+                <span className="nav-icon">
+                  <Icon size={18} />
+                </span>
+                <span className="nav-label">{item.label}</span>
+                {item.badge && !collapsed && (
+                  <span className="nav-badge">{item.badge}</span>
+                )}
+              </button>
+            </React.Fragment>
+          );
+        })}
       </nav>
 
-      {/* Footer - Collapse Toggle & User */}
+      {/* Footer - Collapse Toggle & Super Admin Profile */}
       <div className="sidebar-footer">
         <button
-          className="nav-item"
+          className="sidebar-collapse-btn"
           onClick={() => setCollapsed((c) => !c)}
-          style={{ width: '100%', textAlign: 'left', marginBottom: 8 }}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          <span className="nav-icon" style={{ fontSize: 14 }}>
-            {collapsed ? '→' : '←'}
-          </span>
-          <span className="nav-label" style={{ color: 'var(--color-text-muted)', fontSize: 11 }}>
-            Collapse
+          {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-secondary)', display: collapsed ? 'none' : 'inline' }}>
+            Collapse Sidebar
           </span>
         </button>
 
-        <div className="sidebar-user">
-          <div className="sidebar-avatar">SA</div>
+        <div className="sidebar-user" title="Super Admin Account">
+          <div className="sidebar-avatar">
+            SA
+            <span className="sidebar-avatar-status" />
+          </div>
           <div className="sidebar-user-info">
             <div className="sidebar-user-name">Super Admin</div>
             <div className="sidebar-user-role">admin@bfsi.com</div>

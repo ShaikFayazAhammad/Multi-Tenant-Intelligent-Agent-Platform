@@ -1,4 +1,5 @@
 import React from 'react';
+import { Building, Bot, Activity, LogOut, ChevronRight } from 'lucide-react';
 import type { Organization, Project } from '../../types';
 
 interface HeaderProps {
@@ -38,7 +39,10 @@ export default function Header({
       {/* Context Selectors */}
       <div className="header-selectors">
         <div className="context-select-wrapper">
-          <div className="context-select-label">Organization</div>
+          <div className="context-select-label">
+            <Building size={11} style={{ display: 'inline', marginRight: 4, opacity: 0.7 }} />
+            Organization
+          </div>
           <select
             className="context-select"
             value={selectedOrgId}
@@ -51,10 +55,15 @@ export default function Header({
           </select>
         </div>
 
-        <div className="context-separator">›</div>
+        <div className="context-separator" style={{ color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center' }}>
+          <ChevronRight size={14} />
+        </div>
 
         <div className="context-select-wrapper">
-          <div className="context-select-label">Active Agent / Project</div>
+          <div className="context-select-label">
+            <Bot size={11} style={{ display: 'inline', marginRight: 4, opacity: 0.7 }} />
+            Active Agent / Project
+          </div>
           <select
             className="context-select"
             value={selectedProjectId}
@@ -79,13 +88,24 @@ export default function Header({
           </div>
         )}
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--color-text-muted)' }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', display: 'inline-block', animation: 'pulse-dot 2s ease-in-out infinite' }} />
-          OpenRouter LLM
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          fontSize: 11,
+          color: 'var(--color-text-secondary)',
+          background: 'rgba(255, 255, 255, 0.03)',
+          padding: '4px 10px',
+          borderRadius: 6,
+          border: '1px solid rgba(255, 255, 255, 0.06)',
+        }}>
+          <Activity size={12} color="#10b981" />
+          <span>OpenRouter 99.9%</span>
         </div>
 
-        <button className="btn-signout" onClick={onSignOut}>
-          <span>⏻</span> Sign Out
+        <button className="btn-signout" onClick={onSignOut} title="Sign Out">
+          <LogOut size={14} />
+          <span>Sign Out</span>
         </button>
       </div>
     </header>

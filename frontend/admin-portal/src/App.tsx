@@ -13,6 +13,7 @@ import KnowledgeBaseView from './views/KnowledgeBaseView';
 import ApiVaultView from './views/ApiVaultView';
 import PlaygroundView from './views/PlaygroundView';
 import VisualBuilderView from './views/VisualBuilderView';
+import { CheckCircle2, AlertCircle, AlertTriangle, Info, X } from 'lucide-react';
 
 // --- Toast Types ---
 type ToastType = 'success' | 'error' | 'info' | 'warn';
@@ -21,13 +22,88 @@ interface Toast { id: number; message: string; type: ToastType; }
 // --- Toast Component ---
 function ToastContainer({ toasts, onRemove }: { toasts: Toast[]; onRemove: (id: number) => void }) {
   return (
-    <div style={{ position: 'fixed', top: 20, right: 20, zIndex: 9999, display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 420 }}>
-      {toasts.map((t) => (
-        <div key={t.id} className={`toast toast-${t.type}`} style={{ cursor: 'pointer' }} onClick={() => onRemove(t.id)}>
-          <span style={{ flex: 1 }}>{t.message}</span>
-          <span style={{ fontSize: 12, opacity: 0.6 }}>✕</span>
-        </div>
-      ))}
+    <div style={{
+      position: 'fixed',
+      top: 24,
+      right: 24,
+      zIndex: 9999,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 10,
+      maxWidth: 420,
+      width: 'calc(100vw - 48px)',
+      pointerEvents: 'none',
+    }}>
+      {toasts.map((t) => {
+        const Icon = t.type === 'success'
+          ? CheckCircle2
+          : t.type === 'error'
+          ? AlertCircle
+          : t.type === 'warn'
+          ? AlertTriangle
+          : Info;
+
+        const borderColor = t.type === 'success'
+          ? 'rgba(16, 185, 129, 0.4)'
+          : t.type === 'error'
+          ? 'rgba(244, 63, 94, 0.4)'
+          : t.type === 'warn'
+          ? 'rgba(245, 158, 11, 0.4)'
+          : 'rgba(99, 102, 241, 0.4)';
+
+        const progressBg = t.type === 'success'
+          ? '#10b981'
+          : t.type === 'error'
+          ? '#f43f5e'
+          : t.type === 'warn'
+          ? '#f59e0b'
+          : '#6366f1';
+
+        return (
+          <div
+            key={t.id}
+            className={`toast toast-${t.type}`}
+            style={{
+              pointerEvents: 'auto',
+              cursor: 'pointer',
+              position: 'relative',
+              overflow: 'hidden',
+              background: 'rgba(17, 22, 37, 0.95)',
+              backdropFilter: 'blur(16px)',
+              border: `1px solid ${borderColor}`,
+              boxShadow: '0 10px 30px -5px rgba(0, 0, 0, 0.6), 0 0 15px rgba(0,0,0,0.3)',
+              borderRadius: 10,
+              padding: '12px 14px',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 10,
+            }}
+            onClick={() => onRemove(t.id)}
+          >
+            <Icon size={18} style={{ flexShrink: 0, marginTop: 1 }} />
+            <div style={{ flex: 1, fontSize: 13, lineHeight: 1.45, color: '#f8fafc' }}>
+              {t.message}
+            </div>
+            <button
+              onClick={(e) => { e.stopPropagation(); onRemove(t.id); }}
+              style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 0 }}
+            >
+              <X size={14} />
+            </button>
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                height: 2,
+                background: progressBg,
+                width: '100%',
+                animation: 'toast-timer 5s linear forwards',
+              }}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 }
